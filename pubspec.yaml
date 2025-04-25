@@ -40,7 +40,7 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.6
-  intl: ^0.19.0
+  intl: ^0.20.0
   # http: ^1.2.0 # No longer needed for core functionality
   shared_preferences: ^2.2.3
   # Add the badges package
@@ -65,11 +65,11 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^3.0.0
+  flutter_lints: ^5.0.0
 
   # Add Isar generator and build_runner
   isar_generator: ^3.1.0+1
-  build_runner: ^2.4.0
+  build_runner: ^2.4.15
 
   # Use compatible analyzer version suggested by flutter pub get
   analyzer: ^5.13.0
