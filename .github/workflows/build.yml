@@ -1,10 +1,10 @@
 name: Build Flutter Android APK
 
-on: # Reformat the 'on' block
+on:
   push:
     branches:
       - master
-  workflow_dispatch: {} # Explicitly empty object for workflow_dispatch
+  workflow_dispatch: {}
 
 jobs:
   build:
@@ -26,11 +26,15 @@ jobs:
       - name: Get Flutter dependencies
         run: flutter pub get
 
+      # Build the Android release APK by directly calling Gradle Wrapper
       - name: Build APK
-        run: flutter build apk --release
+        working-directory: ./android # Change working directory to android
+        run: ./gradlew assembleRelease # Directly call gradlew
 
+      # Upload the generated APK file as an artifact
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          # Path relative to the android directory, then up one level for workspace root
+          path: android/app/build/outputs/apk/release/app-release.apk
