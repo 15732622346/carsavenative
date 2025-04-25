@@ -29,7 +29,9 @@ jobs:
       # Build the Android release APK by directly calling Gradle Wrapper
       - name: Build APK
         working-directory: ./android # Change working directory to android
-        run: ./gradlew assembleRelease # Directly call gradlew
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease
 
       # Upload the generated APK file as an artifact
       - name: Upload APK Artifact
