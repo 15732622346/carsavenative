@@ -49,8 +49,8 @@ dependencies:
   provider: ^6.0.0 # Add provider for state management
 
   # Add Isar dependencies
-  isar: ^3.1.0+1
-  isar_flutter_libs: ^3.1.0+1 # Contains Isar Core
+  isar: ^4.0.0-dev.14
+  isar_flutter_libs: ^4.0.0-dev.14 # Contains Isar Core
   path_provider: ^2.0.0 # Needed by Isar to find documents directory
 
   # Add Visibility Detector
@@ -68,7 +68,7 @@ dev_dependencies:
   flutter_lints: ^3.0.0
 
   # Add Isar generator and build_runner
-  isar_generator: ^3.1.0+1
+  isar_generator: ^4.0.0-dev.14
   build_runner: ^2.4.0
 
   # Use compatible analyzer version suggested by flutter pub get

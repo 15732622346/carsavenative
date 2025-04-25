@@ -26,7 +26,7 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
   void initState() {
     super.initState();
     // Re-initialize repository here
-    _vehicleRepository = LocalVehicleRepository(isar);
+    _vehicleRepository = LocalVehicleRepository(isar); 
     _maintenanceRepository = LocalMaintenanceRepository(isar); // Initialize maintenance repo
     _loadVehicles();
   }
