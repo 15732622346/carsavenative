@@ -1,52 +1,36 @@
- name: Build Flutter Android APK
+name: Build Flutter Android APK
 
-# Controls when the workflow will run
-on:
-  # Triggers the workflow on push events but only for the master branch
+on: # Reformat the 'on' block
   push:
-    branches: [ master ]
+    branches:
+      - master
+  workflow_dispatch: {} # Explicitly empty object for workflow_dispatch
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
 
-      # Set up Java environment (needed for Android build)
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin' # Popular OpenJDK distribution
+          distribution: 'temurin'
           java-version: '17'
 
-      # Set up Flutter environment
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: 'stable' # Or specify a specific Flutter version
+          channel: 'stable'
 
-      # Get Flutter dependencies
       - name: Get Flutter dependencies
         run: flutter pub get
 
-      # Build the Android release APK
-      # Note: This assumes you don't need signing keys for a basic build artifact.
-      # For a production release, you'd need to handle signing keys securely (e.g., using secrets).
       - name: Build APK
         run: flutter build apk --release
 
-      # Upload the generated APK file as an artifact
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-apk # Name of the artifact in GitHub Actions
-          path: build/app/outputs/flutter-apk/app-release.apk # Path to the generated APK
+          name: release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
