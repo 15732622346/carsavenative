@@ -22,6 +22,11 @@ subprojects {
                 compileSdkVersion 34 // Force compileSdk 34
             }
         }
+        if (project.name == 'isar_flutter_libs') {
+            android {
+                namespace "com.isar.flutter"
+            }
+        }
     }
 }
 
