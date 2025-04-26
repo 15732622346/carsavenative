@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - master
-  workflow_dispatch: {}
+  workflow_dispatch:
 
 jobs:
   build:
@@ -27,7 +27,7 @@ jobs:
       - name: Get Flutter dependencies
         run: flutter pub get
 
-      - name: Patch isar_flutter_libs
+      - name: Prepare isar_flutter_libs files
         run: |
           # 查找所有isar_flutter_libs目录
           for D in $(find $HOME/.pub-cache -name "isar_flutter_libs*" -type d | grep -v "src")
@@ -38,52 +38,47 @@ jobs:
             mkdir -p $D/android/src/main
             
             # 创建AndroidManifest.xml
-            cat > $D/android/src/main/AndroidManifest.xml << 'EOF'
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.isar.flutter">
-</manifest>
-EOF
+            echo '<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.isar.flutter"></manifest>' > $D/android/src/main/AndroidManifest.xml
             
-            # 创建或替换build.gradle
-            cat > $D/android/build.gradle << 'EOF'
-group 'com.isar.flutter'
-version '1.0'
-
-buildscript {
-    repositories {
-        google()
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath 'com.android.tools.build:gradle:7.3.0'
-    }
-}
-
-rootProject.allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
-
-apply plugin: 'com.android.library'
-
-android {
-    namespace 'com.isar.flutter'
-    compileSdkVersion 34
-    
-    defaultConfig {
-        minSdkVersion 23
-        targetSdkVersion 34
-    }
-    
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-}
-EOF
+            # 创建build.gradle文件内容
+            echo 'group "com.isar.flutter"' > $D/android/build.gradle
+            echo 'version "1.0"' >> $D/android/build.gradle
+            echo '' >> $D/android/build.gradle
+            echo 'buildscript {' >> $D/android/build.gradle
+            echo '    repositories {' >> $D/android/build.gradle
+            echo '        google()' >> $D/android/build.gradle
+            echo '        mavenCentral()' >> $D/android/build.gradle
+            echo '    }' >> $D/android/build.gradle
+            echo '' >> $D/android/build.gradle
+            echo '    dependencies {' >> $D/android/build.gradle
+            echo '        classpath "com.android.tools.build:gradle:7.3.0"' >> $D/android/build.gradle
+            echo '    }' >> $D/android/build.gradle
+            echo '}' >> $D/android/build.gradle
+            echo '' >> $D/android/build.gradle
+            echo 'rootProject.allprojects {' >> $D/android/build.gradle
+            echo '    repositories {' >> $D/android/build.gradle
+            echo '        google()' >> $D/android/build.gradle
+            echo '        mavenCentral()' >> $D/android/build.gradle
+            echo '    }' >> $D/android/build.gradle
+            echo '}' >> $D/android/build.gradle
+            echo '' >> $D/android/build.gradle
+            echo 'apply plugin: "com.android.library"' >> $D/android/build.gradle
+            echo '' >> $D/android/build.gradle
+            echo 'android {' >> $D/android/build.gradle
+            echo '    namespace "com.isar.flutter"' >> $D/android/build.gradle
+            echo '    compileSdkVersion 34' >> $D/android/build.gradle
+            echo '    ' >> $D/android/build.gradle
+            echo '    defaultConfig {' >> $D/android/build.gradle
+            echo '        minSdkVersion 23' >> $D/android/build.gradle
+            echo '        targetSdkVersion 34' >> $D/android/build.gradle
+            echo '    }' >> $D/android/build.gradle
+            echo '    ' >> $D/android/build.gradle
+            echo '    compileOptions {' >> $D/android/build.gradle
+            echo '        sourceCompatibility JavaVersion.VERSION_1_8' >> $D/android/build.gradle
+            echo '        targetCompatibility JavaVersion.VERSION_1_8' >> $D/android/build.gradle
+            echo '    }' >> $D/android/build.gradle
+            echo '}' >> $D/android/build.gradle
+            
             echo "Patched build files for: $D"
           done
 
@@ -99,7 +94,7 @@ EOF
           cp -r android/app/build/outputs debug_info/ || echo "No outputs directory"
           find $HOME/.pub-cache -name "isar*" > debug_info/isar_paths.txt
           ls -la android/app/build/ > debug_info/build_dir.txt || echo "No build directory"
-          echo "======== GRADLE FILES ========" > debug_info/gradle_files.txt
+          echo "GRADLE FILES" > debug_info/gradle_files.txt
           find android -name "*.gradle" >> debug_info/gradle_files.txt
 
       - name: Upload debug info
