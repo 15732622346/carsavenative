@@ -111,12 +111,12 @@ class _HomeScreenState extends State<HomeScreen> {
       // Determine current vehicle after loading all vehicles
       final int? lastSelectedId = _prefs.getInt(_lastSelectedVehicleIdKey);
       if (lastSelectedId != null) {
-        _currentVehicle = _vehicles.firstWhereOrNull((v) => v.isarId == lastSelectedId);
+        _currentVehicle = _vehicles.firstWhereOrNull((v) => v.id == lastSelectedId);
       }
       // Ensure _currentVehicle is set, defaulting to the first if necessary
       _currentVehicle ??= _vehicles.first;
       // Save the potentially updated current vehicle ID
-      await _prefs.setInt(_lastSelectedVehicleIdKey, _currentVehicle!.isarId);
+      await _prefs.setInt(_lastSelectedVehicleIdKey, _currentVehicle!.id);
 
       // Load details specific to the determined current vehicle
       await _loadDetailsForCurrentVehicle();
@@ -686,7 +686,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 itemCount: _vehicles.length,
                 itemBuilder: (context, index) {
                   final vehicle = _vehicles[index];
-                  final isSelected = _currentVehicle?.isarId == vehicle.isarId;
+                  final isSelected = _currentVehicle?.id == vehicle.id;
                   return ListTile(
                     title: Text(vehicle.name),
                     leading: Icon(
@@ -703,7 +703,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       if (!isSelected) { // Only process if a different vehicle is selected
                         setState(() { _currentVehicle = vehicle; });
                         // Save selection and reload details
-                        _prefs.setInt(_lastSelectedVehicleIdKey, vehicle.isarId).then((_) {
+                        _prefs.setInt(_lastSelectedVehicleIdKey, vehicle.id).then((_) {
                            _loadDetailsForCurrentVehicle();
                         });
                       }

@@ -17,15 +17,15 @@ class LocalMaintenanceRepository {
   /// Fetches maintenance components associated with a specific vehicle name.
   Future<List<MaintenanceComponent>> getComponentsByVehicle(String vehicleName) async {
     return await isar.maintenanceComponents
-        .where()
-        .vehicleEqualTo(vehicleName)
+        .filter()
+        .vehicleIndexEqualTo(vehicleName)
         .findAll();
   }
 
   // --- Delete Component ---
   /// Deletes a maintenance component by its Isar ID.
   Future<void> deleteComponent(int componentId) async {
-    await isar.writeAsync((isar) async {
+    await isar.writeTxn(() async {
       await isar.maintenanceComponents.delete(componentId);
     });
   }
@@ -34,14 +34,14 @@ class LocalMaintenanceRepository {
   /// Returns the number of components deleted.
   Future<int> deleteComponentsByVehicle(String vehicleName) async {
     final componentsToDelete = await isar.maintenanceComponents
-        .where()
-        .vehicleEqualTo(vehicleName)
+        .filter()
+        .vehicleIndexEqualTo(vehicleName)
         .findAll();
     
     if (componentsToDelete.isNotEmpty) {
-      return await isar.writeAsync((isar) {
-         final List<int> idsToDelete = componentsToDelete.map((c) => c.isarId).toList();
-         return isar.maintenanceComponents.deleteAll(idsToDelete);
+      return await isar.writeTxn(() async {
+         final List<int> idsToDelete = componentsToDelete.map((c) => c.id).toList();
+         return await isar.maintenanceComponents.deleteAll(idsToDelete);
       });
     } else {
       return 0;
@@ -51,16 +51,16 @@ class LocalMaintenanceRepository {
   // --- Add Component ---
   Future<MaintenanceComponent> addComponent(MaintenanceComponent component) async {
     final existing = await isar.maintenanceComponents
-                              .where()
-                              .vehicleEqualTo(component.vehicle)
+                              .filter()
+                              .vehicleIndexEqualTo(component.vehicle)
                               .nameEqualTo(component.name)
                               .findFirst();
     if (existing != null) {
       throw Exception('添加失败：该车辆下已存在同名的保养项目。');
     }
     
-    await isar.writeAsync((isar) async {
-      isar.maintenanceComponents.put(component);
+    await isar.writeTxn(() async {
+      await isar.maintenanceComponents.put(component);
     });
     return component; 
   }
@@ -70,15 +70,15 @@ class LocalMaintenanceRepository {
   /// IMPORTANT: This only updates basic info and cycle value.
   /// Target mileage/date recalculation happens during the 'Maintain' action.
   Future<MaintenanceComponent> updateComponent(MaintenanceComponent component) async {
-    final existing = await isar.readAsync((isar) => isar.maintenanceComponents.get(component.isarId));
+    final existing = await isar.maintenanceComponents.get(component.id);
     if (existing == null) {
       throw Exception("Cannot update component: Not found in local database.");
     }
     
     if (component.name != existing.name) {
         final conflicting = await isar.maintenanceComponents
-                                  .where()
-                                  .vehicleEqualTo(component.vehicle)
+                                  .filter()
+                                  .vehicleIndexEqualTo(component.vehicle)
                                   .nameEqualTo(component.name)
                                   .findFirst();
         if (conflicting != null) {
@@ -86,16 +86,16 @@ class LocalMaintenanceRepository {
         }
     }
 
-    await isar.writeAsync((isar) async {
-      isar.maintenanceComponents.put(component);
+    await isar.writeTxn(() async {
+      await isar.maintenanceComponents.put(component);
     });
     return component;
   }
 
   // --- Add Maintenance Record ---
   Future<void> addMaintenanceRecord(MaintenanceRecord record) async {
-    await isar.writeAsync((isar) async {
-      isar.maintenanceRecords.put(record);
+    await isar.writeTxn(() async {
+      await isar.maintenanceRecords.put(record);
     });
   }
 
@@ -106,7 +106,7 @@ class LocalMaintenanceRepository {
     required DateTime maintenanceDate, // Actual date maintenance was done
     required bool recalculateNextTarget, // User choice from dialog
   }) async {
-    await isar.writeAsync((isar) async {
+    await isar.writeTxn(() async {
       component.lastMaintenance = maintenanceDate;
 
       if (recalculateNextTarget) {
@@ -120,7 +120,7 @@ class LocalMaintenanceRepository {
       }
 
       if (recalculateNextTarget) {
-         isar.maintenanceComponents.put(component);
+         await isar.maintenanceComponents.put(component);
       }
     });
   }
@@ -147,14 +147,30 @@ class LocalMaintenanceRepository {
   /// Returns the number of records deleted.
   Future<int> deleteRecordsByVehicle(String vehicleName) async {
     final recordsToDelete = await isar.maintenanceRecords
-        .where()
-        .vehicleNameEqualTo(vehicleName)
+        .filter()
+        .vehicleIndexEqualTo(vehicleName)
         .findAll();
 
     if (recordsToDelete.isNotEmpty) {
-      return await isar.writeAsync((isar) {
-         final List<int> idsToDelete = recordsToDelete.map((r) => r.isarId).toList();
-         return isar.maintenanceRecords.deleteAll(idsToDelete);
+      return await isar.writeTxn(() async {
+         final List<int> idsToDelete = recordsToDelete.map((r) => r.id).toList();
+         return await isar.maintenanceRecords.deleteAll(idsToDelete);
+      });
+    } else {
+      return 0;
+    }
+  }
+
+  Future<int> deleteRecordsByComponent(String componentId) async {
+    final recordsToDelete = await isar.maintenanceRecords
+        .filter()
+        .componentIdEqualTo(componentId)
+        .findAll();
+
+    if (recordsToDelete.isNotEmpty) {
+      return await isar.writeTxn(() async {
+         final List<int> idsToDelete = recordsToDelete.map((r) => r.id).toList();
+         return await isar.maintenanceRecords.deleteAll(idsToDelete);
       });
     } else {
       return 0;

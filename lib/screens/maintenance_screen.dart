@@ -92,7 +92,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
        // Load records based on the same filter
        _maintenanceRecords = await _maintenanceRepository.getMaintenanceRecords(vehicleName: _selectedVehicleName);
        if (!mounted) return; // Check mount status after record load
-       print('>>> Loaded ${_maintenanceRecords.length} records for vehicle: $_selectedVehicleName. Record IDs: ${_maintenanceRecords.map((r) => r.isarId).toList()}'); // Log IDs instead
+       print('>>> Loaded ${_maintenanceRecords.length} records for vehicle: $_selectedVehicleName. Record IDs: ${_maintenanceRecords.map((r) => r.id).toList()}'); // Log IDs instead
        setState(() { _isLoadingRecords = false; });
 
      } catch (e) {
@@ -581,7 +581,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
       // --- 1. Save Maintenance Record ---
       final newRecord = MaintenanceRecord(
         vehicleName: component.vehicle,
-        componentId: component.isarId.toString(), // Assuming componentId is string for now
+        componentId: component.id.toString(), // Assuming componentId is string for now
         componentName: component.name,
         maintenanceDate: maintenanceDate,
         mileageAtMaintenance: component.maintenanceType == 'mileage' ? currentMileage : null,
@@ -589,7 +589,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
       );
       await _maintenanceRepository.addMaintenanceRecord(newRecord);
       recordSaved = true;
-      print('>>> Maintenance record saved (or attempted). Record ID (after potential save): ${newRecord.isarId}, Component: ${newRecord.componentName}'); // Log basic info
+      print('>>> Maintenance record saved (or attempted). Record ID (after potential save): ${newRecord.id}, Component: ${newRecord.componentName}'); // Log basic info
 
       // --- 2. Ask about next cycle --- 
       final bool? recalculate = await showDialog<bool>(
@@ -630,7 +630,9 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
           }
       } else {
           // --- 3b. Delete Component (User chose not to set next cycle) ---
-          await _maintenanceRepository.deleteComponent(component.isarId);
+          await _maintenanceRepository.deleteComponent(component.id);
+          // Delete associated records
+          await _maintenanceRepository.deleteRecordsByComponent(component.id.toString());
           if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('组件 "${component.name}" 已删除')),
@@ -689,9 +691,19 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
           maintenanceValue: double.tryParse(periodController.text) ?? 0.0,
           unit: selectedMaintenanceType == 'mileage' ? 'km' : 'days',
         );
-        final componentToSave = updatedComponentData..isarId = componentToEdit.isarId;
+        final updatedComponent = MaintenanceComponent(
+          name: updatedComponentData.name,
+          vehicle: updatedComponentData.vehicle,
+          maintenanceType: updatedComponentData.maintenanceType,
+          maintenanceValue: updatedComponentData.maintenanceValue,
+          unit: updatedComponentData.unit,
+          targetMaintenanceMileage: updatedComponentData.targetMaintenanceMileage,
+          targetMaintenanceDate: updatedComponentData.targetMaintenanceDate,
+          lastMaintenance: updatedComponentData.lastMaintenance,
+        );
+        updatedComponent.id = componentToEdit.id;
 
-        await _maintenanceRepository.updateComponent(componentToSave);
+        await _maintenanceRepository.updateComponent(updatedComponent);
 
         if (mounted) {
           Navigator.pop(context, true); // Close dialog and signal success
@@ -857,7 +869,9 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
     if (confirmed == true) {
       try {
         // Use the repository method directly, passing the int ID
-        await _maintenanceRepository.deleteComponent(component.isarId);
+        await _maintenanceRepository.deleteComponent(component.id);
+        // Delete associated records
+        await _maintenanceRepository.deleteRecordsByComponent(component.id.toString());
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('保养项目 "${component.name}" 已删除')),

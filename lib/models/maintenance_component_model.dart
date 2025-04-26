@@ -11,18 +11,17 @@ enum MaintenanceStatus {
   unknown // 无法确定状态 (例如，缺少数据)
 }
 
-@Collection()
+@collection
 class MaintenanceComponent {
-  @id
-  late int isarId; // Use late non-nullable int for auto-increment in Isar v4
+  Id id = Isar.autoIncrement;
 
-  late String name;
-  late String vehicle; // Vehicle name or potentially link via IsarLink later
-  late String maintenanceType; // 'mileage' or 'date'
-  late double maintenanceValue; // Interval in km or days
+  String name;
+  String vehicle; // Vehicle name or potentially link via IsarLink later
+  String maintenanceType; // 'mileage' or 'date'
+  double maintenanceValue; // Interval in km or days
   double? targetMaintenanceMileage; // Changed from DateTime? to double?
   DateTime? targetMaintenanceDate;
-  late String unit;
+  String unit;
   DateTime? lastMaintenance;
 
   // Define indexes for querying

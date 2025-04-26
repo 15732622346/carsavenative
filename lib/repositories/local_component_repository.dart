@@ -15,26 +15,26 @@ class LocalComponentRepository {
 
   Future<MaintenanceComponent?> getComponentById(int id) async {
     // Use readAsync for read operations
-    return await isar.readAsync((isar) => isar.maintenanceComponents.get(id));
+    return await isar.maintenanceComponents.get(id);
   }
 
   Future<void> addComponent(MaintenanceComponent component) async {
     // Use writeAsync with correct signature
-    await isar.writeAsync((isar) async {
-      isar.maintenanceComponents.put(component); // Call put without await
+    await isar.writeTxn(() async {
+      await isar.maintenanceComponents.put(component);
     });
   }
 
   Future<void> updateComponent(MaintenanceComponent component) async {
     // Use writeAsync with correct signature
-    await isar.writeAsync((isar) async {
-      isar.maintenanceComponents.put(component); // Call put without await
+    await isar.writeTxn(() async {
+      await isar.maintenanceComponents.put(component);
     });
   }
 
   Future<void> deleteComponent(int id) async {
     // Use writeAsync with correct signature
-    await isar.writeAsync((isar) async {
+    await isar.writeTxn(() async {
       await isar.maintenanceComponents.delete(id);
     });
   }
@@ -43,8 +43,8 @@ class LocalComponentRepository {
   Future<List<MaintenanceComponent>> getComponentsByVehicleName(String vehicleName) async {
     // In Isar v4, chain filters directly after where()
     return await isar.maintenanceComponents
-        .where()
-        .vehicleEqualTo(vehicleName)
+        .filter()
+        .vehicleIndexEqualTo(vehicleName)
         .findAll();
   }
 

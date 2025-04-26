@@ -3,6 +3,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:isar/isar.dart';
 import 'package:provider/provider.dart';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 
 import 'models/vehicle_model.dart';
 import 'models/maintenance_component_model.dart';
@@ -20,17 +22,30 @@ late Isar isar;
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final dir = await getApplicationDocumentsDirectory();
+  String directory = '';
+  if (!kIsWeb) {
+    final dir = await getApplicationDocumentsDirectory();
+    directory = dir.path;
+    print('数据库路径: $directory');
+  }
 
-  isar = await Isar.open(
-    schemas: [
-      VehicleSchema,
-      MaintenanceComponentSchema,
-      MaintenanceRecordSchema,
-    ],
-    directory: dir.path,
-    name: 'carsaveDb',
-  );
+  try {
+    isar = await Isar.open(
+      [
+        VehicleSchema,
+        MaintenanceComponentSchema,
+        MaintenanceRecordSchema,
+      ],
+      directory: directory,
+      name: 'carsaveDb',
+      inspector: true,
+    );
+    print('Isar 数据库初始化成功！');
+  } catch (e, stackTrace) {
+    print('Isar 数据库初始化失败：$e');
+    print('错误堆栈：$stackTrace');
+    rethrow;
+  }
 
   final localVehicleRepository = LocalVehicleRepository(isar);
   final localComponentRepository = LocalComponentRepository(isar);

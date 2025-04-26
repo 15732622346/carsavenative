@@ -15,24 +15,21 @@ class LocalVehicleRepository {
   }
 
   // Get a single vehicle by Isar ID
-  Future<Vehicle?> getVehicleById(int isarId) async {
-    // Use readAsync for read operations (optional, but good practice)
-    return await isar.readAsync((isar) => isar.vehicles.get(isarId));
+  Future<Vehicle?> getVehicleById(int id) async {
+    return await isar.vehicles.get(id);
   }
 
   // Add a new vehicle
   Future<Vehicle> addVehicle(Vehicle vehicle) async {
     // --- Logic to check for duplicate name locally ---
-    // In Isar v4, chain filters directly after where()
-    final existing = await isar.vehicles.where().nameEqualTo(vehicle.name).findFirst();
+    final existing = await isar.vehicles.filter().nameEqualTo(vehicle.name).findFirst();
     if (existing != null) {
       throw Exception('添加失败：已存在同名的车辆，请使用其他名称。');
     }
     // --- End duplicate check ---
 
-    // Write the new vehicle using writeAsync with the correct signature
-    await isar.writeAsync((isar) async {
-      isar.vehicles.put(vehicle); // Call put without await inside transaction
+    await isar.writeTxn(() async {
+      await isar.vehicles.put(vehicle);
     });
     return vehicle;
   }
@@ -40,46 +37,40 @@ class LocalVehicleRepository {
   // Update an existing vehicle
   Future<Vehicle> updateVehicle(Vehicle vehicle) async {
     // Fetch existing to ensure it exists before update
-    // Use readAsync for read operations
-    final existingVehicle = await isar.readAsync((isar) => isar.vehicles.get(vehicle.isarId));
+    final existingVehicle = await isar.vehicles.get(vehicle.id);
     if (existingVehicle == null) {
       throw Exception("Cannot update vehicle: Not found in local database.");
     }
     
     // Optional: Check for name conflict if name is changed
     if (vehicle.name != existingVehicle.name) {
-        // In Isar v4, chain filters directly after where()
-        final conflictingVehicle = await isar.vehicles.where().nameEqualTo(vehicle.name).findFirst();
+        final conflictingVehicle = await isar.vehicles.filter().nameEqualTo(vehicle.name).findFirst();
         if (conflictingVehicle != null) {
              throw Exception('更新失败：已存在同名的车辆，请使用其他名称。');
         }
     }
 
-    // Perform the update using writeAsync with the correct signature
-    await isar.writeAsync((isar) async {
-      isar.vehicles.put(vehicle); // Call put without await inside transaction
+    await isar.writeTxn(() async {
+      await isar.vehicles.put(vehicle);
     });
     return vehicle;
   }
 
   // Delete a vehicle
-  Future<void> deleteVehicle(int isarId) async {
-    // Use writeAsync with the correct signature
-    await isar.writeAsync((isar) async {
-      await isar.vehicles.delete(isarId); // delete returns Future<bool>
+  Future<void> deleteVehicle(int id) async {
+    await isar.writeTxn(() async {
+      await isar.vehicles.delete(id);
     });
   }
 
   // Read All (Stream) - Useful for reactive UI updates
   Stream<List<Vehicle>> watchAllVehicles() {
-     // Implementation using isar.vehicles.where().watch(fireImmediately: true)
-     return Stream.value([]); // Placeholder
+    return isar.vehicles.where().watch(fireImmediately: true);
   }
 
   // Read One by Isar ID (Stream)
-  Stream<Vehicle?> watchVehicleById(Id isarId) {
-    // Implementation using isar.vehicles.watchObject(isarId, fireImmediately: true)
-    return Stream.value(null); // Placeholder
+  Stream<Vehicle?> watchVehicleById(Id id) {
+    return isar.vehicles.watchObject(id, fireImmediately: true);
   }
 
   // TODO: Add specific query methods as needed (e.g., find by name, filter by criteria)

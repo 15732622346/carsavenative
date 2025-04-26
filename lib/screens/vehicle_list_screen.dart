@@ -128,12 +128,11 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
 
     // Perform deletion within a single transaction
     try {
-      // Use writeAsync in Isar v4
-      await isar.writeAsync((isar) async {
+      await isar.writeTxn(() async {
         // 1. Delete associated maintenance components
         await _maintenanceRepository.deleteComponentsByVehicle(vehicle.name);
-        // 2. Delete the vehicle itself (already accepts int)
-        await _vehicleRepository.deleteVehicle(vehicle.isarId); 
+        // 2. Delete the vehicle itself
+        await _vehicleRepository.deleteVehicle(vehicle.id); 
         // 3. Delete associated maintenance records
         await _maintenanceRepository.deleteRecordsByVehicle(vehicle.name);
       });
@@ -395,14 +394,10 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
               final newMileage = int.parse(mileageController.text); 
               try {
                 // Create the updated vehicle object using copyWith
-                final updatedVehicleData = vehicle.copyWith(mileage: newMileage);
-                
-                // Manually assign the original isarId to the new object
-                final updatedVehicle = updatedVehicleData
-                  ..isarId = vehicle.isarId;
+                final updatedVehicle = vehicle.copyWith(mileage: newMileage);
 
-                // Call repository update method with the object containing the correct isarId
-                await _vehicleRepository.updateVehicle(updatedVehicle); 
+                // Call repository update method
+                await _vehicleRepository.updateVehicle(updatedVehicle);
                 
                 if (mounted) {
                   Navigator.pop(context);

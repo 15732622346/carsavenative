@@ -49,8 +49,8 @@ dependencies:
   provider: ^6.0.0 # Add provider for state management
 
   # Add Isar dependencies
-  isar: ^4.0.0-dev.14 # Update to pre-release version
-  isar_flutter_libs: ^4.0.0-dev.14 # Update to pre-release version
+  isar: ^3.1.0+1 # 使用稳定版本
+  isar_flutter_libs: ^3.1.0+1 # 使用稳定版本
   path_provider: ^2.0.0 # Needed by Isar to find documents directory
 
   # Add Visibility Detector
@@ -68,11 +68,11 @@ dev_dependencies:
   flutter_lints: ^3.0.0
 
   # Add Isar generator and build_runner
-  # isar_generator: ^4.0.0-dev.14 # Removed, generator is built into Isar 4
+  isar_generator: ^3.1.0+1 # 添加与 Isar 版本匹配的生成器
   build_runner: ^2.4.0
 
   # Use compatible analyzer version suggested by flutter pub get
-  analyzer: ^5.13.0 # Reverted analyzer version for Isar 4 pre-release compatibility
+  analyzer: ^5.13.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

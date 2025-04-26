@@ -3,16 +3,15 @@ import 'package:isar/isar.dart';
 
 part 'maintenance_record_model.g.dart'; // Isar code generation
 
-@Collection()
+@collection
 class MaintenanceRecord {
-  @id
-  late int isarId; // Use late non-nullable int for auto-increment in Isar v4
+  Id id = Isar.autoIncrement;
 
   // Keep original fields, ensure types match Isar needs
-  late String vehicleName;
-  late String componentId; // Might change to IsarLink later if needed
-  late String componentName;
-  late DateTime maintenanceDate;
+  String vehicleName;
+  String componentId; // Might change to IsarLink later if needed
+  String componentName;
+  DateTime maintenanceDate;
   double? mileageAtMaintenance;
   String? notes;
 
