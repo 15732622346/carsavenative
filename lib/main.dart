@@ -23,7 +23,7 @@ Future<void> main() async {
   final dir = await getApplicationDocumentsDirectory();
 
   isar = await Isar.open(
-    [
+    schemas: [
       VehicleSchema,
       MaintenanceComponentSchema,
       MaintenanceRecordSchema,
