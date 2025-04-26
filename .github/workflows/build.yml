@@ -35,6 +35,10 @@ jobs:
           ./gradlew clean
           cd ..
 
+      # 重新运行 flutter pub get 以生成被清理的文件
+      - name: Get Flutter dependencies again
+        run: flutter pub get
+
       # Add step to check network connection before building
       - name: Check network connection to Gradle distributions
         run: curl -v https://services.gradle.org/distributions/gradle-8.7-bin.zip -o /dev/null
