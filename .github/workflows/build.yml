@@ -48,8 +48,35 @@ jobs:
         run: |
           ISAR_GRADLE_FILE="$HOME/.pub-cache/hosted/pub.dev/isar_flutter_libs-3.1.0+1/android/build.gradle"
           if [ -f "$ISAR_GRADLE_FILE" ]; then
-            echo "android { namespace 'com.isar.flutter' }" >> "$ISAR_GRADLE_FILE"
-            echo "Added namespace to isar_flutter_libs build.gradle"
+            # 首先检查文件内容
+            echo "Current build.gradle content:"
+            cat "$ISAR_GRADLE_FILE"
+            
+            # 创建临时文件
+            TMP_FILE=$(mktemp)
+            
+            # 使用awk在apply plugin之后添加android配置块
+            awk '
+              /apply plugin: "com.android.library"/ {
+                print
+                print "android {"
+                print "    namespace \"com.isar.flutter\""
+                print "    compileSdkVersion rootProject.ext.compileSdkVersion"
+                print "    defaultConfig {"
+                print "        minSdkVersion rootProject.ext.minSdkVersion"
+                print "        targetSdkVersion rootProject.ext.targetSdkVersion"
+                print "    }"
+                print "}"
+                next
+              }
+              { print }
+            ' "$ISAR_GRADLE_FILE" > "$TMP_FILE"
+            
+            # 替换原文件
+            mv "$TMP_FILE" "$ISAR_GRADLE_FILE"
+            
+            echo "Modified build.gradle content:"
+            cat "$ISAR_GRADLE_FILE"
           else
             echo "isar_flutter_libs build.gradle not found at expected location"
             find $HOME/.pub-cache -name "isar_flutter_libs*" -type d
