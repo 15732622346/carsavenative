@@ -43,6 +43,18 @@ jobs:
       - name: Check network connection to Gradle distributions
         run: curl -v https://services.gradle.org/distributions/gradle-8.7-bin.zip -o /dev/null
 
+      # 添加修复 isar_flutter_libs namespace 的步骤
+      - name: Fix isar_flutter_libs namespace
+        run: |
+          ISAR_GRADLE_FILE="$HOME/.pub-cache/hosted/pub.dev/isar_flutter_libs-3.1.0+1/android/build.gradle"
+          if [ -f "$ISAR_GRADLE_FILE" ]; then
+            echo "android { namespace 'com.isar.flutter' }" >> "$ISAR_GRADLE_FILE"
+            echo "Added namespace to isar_flutter_libs build.gradle"
+          else
+            echo "isar_flutter_libs build.gradle not found at expected location"
+            find $HOME/.pub-cache -name "isar_flutter_libs*" -type d
+          fi
+
       # Build the Android release APK by directly calling Gradle Wrapper
       - name: Build APK
         working-directory: ./android # Change working directory to android
