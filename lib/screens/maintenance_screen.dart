@@ -840,30 +840,27 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('确认删除'),
-        content: Text('您确定要删除保养项目 "${component.name}" 吗？此操作不可撤销。'), // Consider also deleting records?
+        content: Text('您确定要删除保养项目 "${component.name}" 吗？此操作不可撤销。'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false), // Return false if cancelled
+            onPressed: () => Navigator.of(context).pop(false),
             child: const Text('取消'),
           ),
           TextButton(
-            onPressed: () {
-              Navigator.pop(context, true); // Return true if confirmed
-            },
-            style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
-            child: const Text('删除'),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('删除', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
     );
 
-    // If the user confirmed, proceed with deletion
     if (confirmed == true) {
       try {
+        // Use the repository method directly, passing the int ID
         await _maintenanceRepository.deleteComponent(component.isarId);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('"${component.name}" 已删除')),
+            SnackBar(content: Text('保养项目 "${component.name}" 已删除')),
           );
           _loadComponentsAndRecords(); // Refresh the list
         }

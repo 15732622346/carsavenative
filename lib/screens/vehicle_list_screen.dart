@@ -128,10 +128,11 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
 
     // Perform deletion within a single transaction
     try {
-      await isar.writeTxn(() async {
+      // Use writeAsync in Isar v4
+      await isar.writeAsync((isar) async {
         // 1. Delete associated maintenance components
         await _maintenanceRepository.deleteComponentsByVehicle(vehicle.name);
-        // 2. Delete the vehicle itself
+        // 2. Delete the vehicle itself (already accepts int)
         await _vehicleRepository.deleteVehicle(vehicle.isarId); 
         // 3. Delete associated maintenance records
         await _maintenanceRepository.deleteRecordsByVehicle(vehicle.name);
