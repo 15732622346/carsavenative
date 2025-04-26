@@ -180,6 +180,74 @@ EOF
             find $HOME/.pub-cache -type d | grep -i "isar"
           fi
 
+      # 添加直接修改本地Gradle构建文件的步骤
+      - name: Directly patch build files
+        run: |
+          # 确保isar_flutter_libs在.pub-cache中的位置
+          for D in $(find $HOME/.pub-cache -name "isar_flutter_libs*" -type d)
+          do
+            echo "Found isar directory: $D"
+            
+            # 创建本地补丁文件
+            mkdir -p $D/android/src/main
+            
+            # 创建AndroidManifest.xml
+            cat > $D/android/src/main/AndroidManifest.xml << 'EOF'
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.isar.flutter">
+</manifest>
+EOF
+            
+            # 创建build.gradle
+            cat > $D/android/build.gradle << 'EOF'
+group 'com.isar.flutter'
+version '1.0'
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.3.0'
+    }
+}
+
+rootProject.allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+apply plugin: 'com.android.library'
+
+android {
+    namespace 'com.isar.flutter'
+    compileSdkVersion 33
+    
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion 33
+    }
+    
+    lintOptions {
+        disable 'InvalidPackage'
+    }
+    
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+EOF
+            echo "Created build files for: $D"
+          done
+          
+          # 最后，列出所有创建的文件
+          find $HOME/.pub-cache -name "isar_flutter_libs*" -type d -exec find {} -name "*.gradle" -o -name "*.xml" \;
+
       # Build the Android release APK by directly calling Gradle Wrapper
       - name: Build APK
         working-directory: ./android # Change working directory to android
