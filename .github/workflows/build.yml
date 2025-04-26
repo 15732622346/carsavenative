@@ -50,30 +50,30 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleRelease
 
-      # 新增：检查 android/app/build 目录是否存在
-      - name: Check android/app/build directory
-        run: ls -al android/app/build/
+      # 新增：检查 android/app/build 目录是否存在 (现在应该检查新的位置)
+      - name: Check build/app directory
+        run: ls -al build/app/
         continue-on-error: true # 即使失败也继续，以便我们看到后续错误
 
-      # 新增：检查 android/app 目录是否存在
+      # 新增：检查 android/app 目录是否存在 (这个保持不变)
       - name: Check android/app directory
         run: ls -al android/app/
         continue-on-error: true
 
-      # 新增：检查 android 目录是否存在
+      # 新增：检查 android 目录是否存在 (这个保持不变)
       - name: Check android directory
         run: ls -al android/
         continue-on-error: true
 
-      # 原来的检查，现在可以更精确地看到错误来源
+      # 原来的检查，现在检查新的路径
       - name: List Build Output Directory
-        run: ls -R android/app/build/outputs/
-        # 这个命令在工作空间根目录运行，所以路径是相对根目录的
+        run: ls -R build/app/outputs/
+        # 这个命令在工作空间根目录运行
 
       # Upload the generated APK file as an artifact
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
-          # Path relative to the android directory, then up one level for workspace root
-          path: android/app/build/outputs/apk/release/app-release.apk
+          # Path relative to the workspace root, pointing to the redirected build output
+          path: build/app/outputs/apk/release/app-release.apk
