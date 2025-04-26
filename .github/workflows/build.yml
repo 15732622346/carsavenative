@@ -43,43 +43,141 @@ jobs:
       - name: Check network connection to Gradle distributions
         run: curl -v https://services.gradle.org/distributions/gradle-8.7-bin.zip -o /dev/null
 
-      # 添加修复 isar_flutter_libs namespace 的步骤
-      - name: Fix isar_flutter_libs namespace
+      # 添加修复 isar_flutter_libs namespace 的步骤 - 完全重写
+      - name: Fix isar_flutter_libs namespace issue
         run: |
-          ISAR_GRADLE_FILE="$HOME/.pub-cache/hosted/pub.dev/isar_flutter_libs-3.1.0+1/android/build.gradle"
-          if [ -f "$ISAR_GRADLE_FILE" ]; then
-            # 首先检查文件内容
-            echo "Current build.gradle content:"
-            cat "$ISAR_GRADLE_FILE"
+          # 找到isar_flutter_libs目录
+          ISAR_DIR=$(find $HOME/.pub-cache -name "isar_flutter_libs*" -type d | grep -v "src" | head -n 1)
+          echo "Found isar directory: $ISAR_DIR"
+          
+          if [ -n "$ISAR_DIR" ]; then
+            # 创建一个全新的build.gradle文件
+            ISAR_GRADLE_FILE="$ISAR_DIR/android/build.gradle"
+            echo "Target build.gradle path: $ISAR_GRADLE_FILE"
             
-            # 创建临时文件
-            TMP_FILE=$(mktemp)
+            if [ -f "$ISAR_GRADLE_FILE" ]; then
+              # 备份原始文件
+              cp "$ISAR_GRADLE_FILE" "${ISAR_GRADLE_FILE}.bak"
+              
+              # 创建新文件内容
+              cat > "$ISAR_GRADLE_FILE" << 'EOF'
+group 'com.isar.flutter'
+version '1.0'
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.3.0'
+    }
+}
+
+rootProject.allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+apply plugin: 'com.android.library'
+
+android {
+    namespace 'com.isar.flutter'
+    compileSdkVersion 33
+    
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion 33
+    }
+    
+    lintOptions {
+        disable 'InvalidPackage'
+    }
+    
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+EOF
+              echo "Created new build.gradle file with namespace"
+              cat "$ISAR_GRADLE_FILE"
+            else
+              echo "isar_flutter_libs build.gradle not found at: $ISAR_GRADLE_FILE"
+              # 尝试创建缺失的文件和目录
+              mkdir -p "$(dirname "$ISAR_GRADLE_FILE")"
+              
+              cat > "$ISAR_GRADLE_FILE" << 'EOF'
+group 'com.isar.flutter'
+version '1.0'
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.3.0'
+    }
+}
+
+rootProject.allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+apply plugin: 'com.android.library'
+
+android {
+    namespace 'com.isar.flutter'
+    compileSdkVersion 33
+    
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion 33
+    }
+    
+    lintOptions {
+        disable 'InvalidPackage'
+    }
+    
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+EOF
+              echo "Created new build.gradle file at: $ISAR_GRADLE_FILE"
+            fi
             
-            # 使用awk在apply plugin之后添加android配置块
-            awk '
-              /apply plugin: "com.android.library"/ {
-                print
-                print "android {"
-                print "    namespace \"com.isar.flutter\""
-                print "    compileSdkVersion rootProject.ext.compileSdkVersion"
-                print "    defaultConfig {"
-                print "        minSdkVersion rootProject.ext.minSdkVersion"
-                print "        targetSdkVersion rootProject.ext.targetSdkVersion"
-                print "    }"
-                print "}"
-                next
-              }
-              { print }
-            ' "$ISAR_GRADLE_FILE" > "$TMP_FILE"
-            
-            # 替换原文件
-            mv "$TMP_FILE" "$ISAR_GRADLE_FILE"
-            
-            echo "Modified build.gradle content:"
-            cat "$ISAR_GRADLE_FILE"
+            # 检查AndroidManifest.xml并修复它
+            MANIFEST_FILE="$ISAR_DIR/android/src/main/AndroidManifest.xml"
+            if [ -f "$MANIFEST_FILE" ]; then
+              # 确保manifest有正确的package属性
+              sed -i 's/<manifest[^>]*>/<manifest xmlns:android="http:\/\/schemas.android.com\/apk\/res\/android" package="com.isar.flutter">/' "$MANIFEST_FILE"
+              echo "Updated AndroidManifest.xml:"
+              cat "$MANIFEST_FILE"
+            else
+              echo "AndroidManifest.xml not found at expected location: $MANIFEST_FILE"
+              # 创建目录
+              mkdir -p "$(dirname "$MANIFEST_FILE")"
+              # 创建基本的AndroidManifest.xml
+              cat > "$MANIFEST_FILE" << 'EOF'
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.isar.flutter">
+</manifest>
+EOF
+              echo "Created new AndroidManifest.xml at: $MANIFEST_FILE"
+            fi
           else
-            echo "isar_flutter_libs build.gradle not found at expected location"
-            find $HOME/.pub-cache -name "isar_flutter_libs*" -type d
+            echo "Could not find isar_flutter_libs directory in pub cache"
+            find $HOME/.pub-cache -type d | grep -i "isar"
           fi
 
       # Build the Android release APK by directly calling Gradle Wrapper
