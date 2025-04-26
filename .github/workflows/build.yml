@@ -25,7 +25,16 @@ jobs:
 
       - name: Get Flutter dependencies
         run: flutter pub get
-                # Add step to check network connection before building
+
+      # 新增：清理 Flutter 和 Gradle 缓存
+      - name: Clean Flutter and Gradle cache
+        run: |
+          flutter clean
+          cd android
+          ./gradlew clean
+          cd ..
+
+      # Add step to check network connection before building
       - name: Check network connection to Gradle distributions
         run: curl -v https://services.gradle.org/distributions/gradle-8.7-bin.zip -o /dev/null
 
