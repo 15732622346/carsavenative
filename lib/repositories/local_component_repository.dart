@@ -14,38 +14,36 @@ class LocalComponentRepository {
   }
 
   Future<MaintenanceComponent?> getComponentById(int id) async {
-    // Use the instance field 'isar'
-    // Assuming MaintenanceComponent has an isarId getter after generation
-    return await isar.maintenanceComponents.get(id);
+    // Use readAsync for read operations
+    return await isar.readAsync((isar) => isar.maintenanceComponents.get(id));
   }
 
   Future<void> addComponent(MaintenanceComponent component) async {
-    await isar.writeTxn(() async {
-      // Use the instance field 'isar'
-      await isar.maintenanceComponents.put(component);
+    // Use writeAsync with correct signature
+    await isar.writeAsync((isar) async {
+      isar.maintenanceComponents.put(component); // Call put without await
     });
   }
 
   Future<void> updateComponent(MaintenanceComponent component) async {
-    await isar.writeTxn(() async {
-       // Use the instance field 'isar'
-      await isar.maintenanceComponents.put(component);
+    // Use writeAsync with correct signature
+    await isar.writeAsync((isar) async {
+      isar.maintenanceComponents.put(component); // Call put without await
     });
   }
 
   Future<void> deleteComponent(int id) async {
-    await isar.writeTxn(() async {
-      // Use the instance field 'isar'
-      // Assuming MaintenanceComponent has an isarId getter after generation
+    // Use writeAsync with correct signature
+    await isar.writeAsync((isar) async {
       await isar.maintenanceComponents.delete(id);
     });
   }
 
   // New method to get components filtered by vehicle name
   Future<List<MaintenanceComponent>> getComponentsByVehicleName(String vehicleName) async {
-    // Use the instance field 'isar'
+    // In Isar v4, chain filters directly after where()
     return await isar.maintenanceComponents
-        .filter()
+        .where()
         .vehicleEqualTo(vehicleName)
         .findAll();
   }

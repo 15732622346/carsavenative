@@ -10,9 +10,9 @@ class LocalRecordRepository {
   // Get records, optionally filtered by vehicle name
   Future<List<MaintenanceRecord>> getMaintenanceRecords({String? vehicleName}) async {
     if (vehicleName != null && vehicleName.isNotEmpty) {
-      // Use index for filtering
-      return await isar.maintenanceRecords.filter()
-              .vehicleNameEqualTo(vehicleName)
+      // In Isar v4, chain filters directly after where()
+      return await isar.maintenanceRecords.where()
+              .vehicleNameEqualTo(vehicleName) // Apply filter directly
               .sortByMaintenanceDateDesc() // Sort by date descending
               .findAll();
     } else {
@@ -25,18 +25,17 @@ class LocalRecordRepository {
 
   // Add a new maintenance record
   Future<MaintenanceRecord> addMaintenanceRecord(MaintenanceRecord record) async {
-    // Add timestamp if not already set (or use default from model?)
-    // record.maintenanceDate ??= DateTime.now(); // Ensure date is set
-    
-    await isar.writeTxn(() async {
-      await isar.maintenanceRecords.put(record);
+    // Use writeAsync with correct signature
+    await isar.writeAsync((isar) async {
+      isar.maintenanceRecords.put(record); // Call put without await
     });
     return record;
   }
 
   // Delete a specific maintenance record by Isar ID
-  Future<void> deleteMaintenanceRecord(Id isarId) async {
-    await isar.writeTxn(() async {
+  Future<void> deleteMaintenanceRecord(int isarId) async { // Changed Id to int
+    // Use writeAsync with correct signature
+    await isar.writeAsync((isar) async {
       await isar.maintenanceRecords.delete(isarId);
     });
   }
