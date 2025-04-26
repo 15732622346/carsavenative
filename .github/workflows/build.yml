@@ -31,6 +31,7 @@ jobs:
         run: |
           flutter clean
           cd android
+          chmod +x gradlew
           ./gradlew clean
           cd ..
 
