@@ -25,6 +25,15 @@ subprojects {
         if (project.name == 'isar_flutter_libs') {
             android {
                 namespace "com.isar.flutter"
+                compileSdkVersion 34
+                defaultConfig {
+                    minSdkVersion 23
+                    targetSdkVersion 34
+                }
+                compileOptions {
+                    sourceCompatibility JavaVersion.VERSION_1_8
+                    targetCompatibility JavaVersion.VERSION_1_8
+                }
             }
         }
     }

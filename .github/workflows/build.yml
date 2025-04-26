@@ -86,11 +86,11 @@ apply plugin: 'com.android.library'
 
 android {
     namespace 'com.isar.flutter'
-    compileSdkVersion 33
+    compileSdkVersion 34
     
     defaultConfig {
-        minSdkVersion 16
-        targetSdkVersion 33
+        minSdkVersion 23
+        targetSdkVersion 34
     }
     
     lintOptions {
@@ -136,11 +136,11 @@ apply plugin: 'com.android.library'
 
 android {
     namespace 'com.isar.flutter'
-    compileSdkVersion 33
+    compileSdkVersion 34
     
     defaultConfig {
-        minSdkVersion 16
-        targetSdkVersion 33
+        minSdkVersion 23
+        targetSdkVersion 34
     }
     
     lintOptions {
@@ -225,11 +225,11 @@ apply plugin: 'com.android.library'
 
 android {
     namespace 'com.isar.flutter'
-    compileSdkVersion 33
+    compileSdkVersion 34
     
     defaultConfig {
-        minSdkVersion 16
-        targetSdkVersion 33
+        minSdkVersion 23
+        targetSdkVersion 34
     }
     
     lintOptions {
