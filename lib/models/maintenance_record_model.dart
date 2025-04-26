@@ -5,7 +5,8 @@ part 'maintenance_record_model.g.dart'; // Isar code generation
 
 @Collection()
 class MaintenanceRecord {
-  Id isarId = Isar.autoIncrement;
+  @id
+  late int isarId; // Use late non-nullable int for auto-increment in Isar v4
 
   // Keep original fields, ensure types match Isar needs
   late String vehicleName;
@@ -16,10 +17,10 @@ class MaintenanceRecord {
   String? notes;
 
   // Add indexes for potential queries
-  @Index(type: IndexType.value)
+  @Index() // Update Index annotation for Isar v4
   String get vehicleIndex => vehicleName;
 
-  @Index(type: IndexType.value)
+  @Index() // Update Index annotation for Isar v4
   String get componentIdIndex => componentId;
 
   // Constructor without ID

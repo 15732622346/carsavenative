@@ -3,1616 +3,487 @@
 part of 'maintenance_record_model.dart';
 
 // **************************************************************************
-// IsarCollectionGenerator
+// _IsarCollectionGenerator
 // **************************************************************************
 
 // coverage:ignore-file
-// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
+// ignore_for_file: duplicate_ignore, invalid_use_of_protected_member, lines_longer_than_80_chars, constant_identifier_names, avoid_js_rounded_ints, no_leading_underscores_for_local_identifiers, require_trailing_commas, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_in_if_null_operators, library_private_types_in_public_api, prefer_const_constructors
+// ignore_for_file: type=lint
 
 extension GetMaintenanceRecordCollection on Isar {
-  IsarCollection<MaintenanceRecord> get maintenanceRecords => this.collection();
+  IsarCollection<int, MaintenanceRecord> get maintenanceRecords =>
+      this.collection();
 }
 
-const MaintenanceRecordSchema = CollectionSchema(
-  name: r'MaintenanceRecord',
-  id: 8394037719530270343,
-  properties: {
-    r'componentId': PropertySchema(
-      id: 0,
-      name: r'componentId',
-      type: IsarType.string,
-    ),
-    r'componentIdIndex': PropertySchema(
-      id: 1,
-      name: r'componentIdIndex',
-      type: IsarType.string,
-    ),
-    r'componentName': PropertySchema(
-      id: 2,
-      name: r'componentName',
-      type: IsarType.string,
-    ),
-    r'formattedDate': PropertySchema(
-      id: 3,
-      name: r'formattedDate',
-      type: IsarType.string,
-    ),
-    r'maintenanceDate': PropertySchema(
-      id: 4,
-      name: r'maintenanceDate',
-      type: IsarType.dateTime,
-    ),
-    r'mileageAtMaintenance': PropertySchema(
-      id: 5,
-      name: r'mileageAtMaintenance',
-      type: IsarType.double,
-    ),
-    r'notes': PropertySchema(
-      id: 6,
-      name: r'notes',
-      type: IsarType.string,
-    ),
-    r'vehicleIndex': PropertySchema(
-      id: 7,
-      name: r'vehicleIndex',
-      type: IsarType.string,
-    ),
-    r'vehicleName': PropertySchema(
-      id: 8,
-      name: r'vehicleName',
-      type: IsarType.string,
-    )
-  },
-  estimateSize: _maintenanceRecordEstimateSize,
-  serialize: _maintenanceRecordSerialize,
-  deserialize: _maintenanceRecordDeserialize,
-  deserializeProp: _maintenanceRecordDeserializeProp,
-  idName: r'isarId',
-  indexes: {
-    r'vehicleIndex': IndexSchema(
-      id: 6484721052844456263,
-      name: r'vehicleIndex',
-      unique: false,
-      replace: false,
-      properties: [
-        IndexPropertySchema(
-          name: r'vehicleIndex',
-          type: IndexType.value,
-          caseSensitive: true,
-        )
-      ],
-    ),
-    r'componentIdIndex': IndexSchema(
-      id: 7224497827164607412,
-      name: r'componentIdIndex',
-      unique: false,
-      replace: false,
-      properties: [
-        IndexPropertySchema(
-          name: r'componentIdIndex',
-          type: IndexType.value,
-          caseSensitive: true,
-        )
-      ],
-    )
-  },
-  links: {},
-  embeddedSchemas: {},
-  getId: _maintenanceRecordGetId,
-  getLinks: _maintenanceRecordGetLinks,
-  attach: _maintenanceRecordAttach,
-  version: '3.1.0+1',
+const MaintenanceRecordSchema = IsarGeneratedSchema(
+  schema: IsarSchema(
+    name: 'MaintenanceRecord',
+    idName: 'isarId',
+    embedded: false,
+    properties: [
+      IsarPropertySchema(
+        name: 'vehicleName',
+        type: IsarType.string,
+      ),
+      IsarPropertySchema(
+        name: 'componentId',
+        type: IsarType.string,
+      ),
+      IsarPropertySchema(
+        name: 'componentName',
+        type: IsarType.string,
+      ),
+      IsarPropertySchema(
+        name: 'maintenanceDate',
+        type: IsarType.dateTime,
+      ),
+      IsarPropertySchema(
+        name: 'mileageAtMaintenance',
+        type: IsarType.double,
+      ),
+      IsarPropertySchema(
+        name: 'notes',
+        type: IsarType.string,
+      ),
+      IsarPropertySchema(
+        name: 'vehicleIndex',
+        type: IsarType.string,
+      ),
+      IsarPropertySchema(
+        name: 'componentIdIndex',
+        type: IsarType.string,
+      ),
+      IsarPropertySchema(
+        name: 'formattedDate',
+        type: IsarType.string,
+      ),
+    ],
+    indexes: [
+      IsarIndexSchema(
+        name: 'vehicleIndex',
+        properties: [
+          "vehicleIndex",
+        ],
+        unique: false,
+        hash: false,
+      ),
+      IsarIndexSchema(
+        name: 'componentIdIndex',
+        properties: [
+          "componentIdIndex",
+        ],
+        unique: false,
+        hash: false,
+      ),
+    ],
+  ),
+  converter: IsarObjectConverter<int, MaintenanceRecord>(
+    serialize: serializeMaintenanceRecord,
+    deserialize: deserializeMaintenanceRecord,
+    deserializeProperty: deserializeMaintenanceRecordProp,
+  ),
+  embeddedSchemas: [],
 );
 
-int _maintenanceRecordEstimateSize(
-  MaintenanceRecord object,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
-  var bytesCount = offsets.last;
-  bytesCount += 3 + object.componentId.length * 3;
-  bytesCount += 3 + object.componentIdIndex.length * 3;
-  bytesCount += 3 + object.componentName.length * 3;
-  bytesCount += 3 + object.formattedDate.length * 3;
+@isarProtected
+int serializeMaintenanceRecord(IsarWriter writer, MaintenanceRecord object) {
+  IsarCore.writeString(writer, 1, object.vehicleName);
+  IsarCore.writeString(writer, 2, object.componentId);
+  IsarCore.writeString(writer, 3, object.componentName);
+  IsarCore.writeLong(
+      writer, 4, object.maintenanceDate.toUtc().microsecondsSinceEpoch);
+  IsarCore.writeDouble(writer, 5, object.mileageAtMaintenance ?? double.nan);
   {
     final value = object.notes;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
+    if (value == null) {
+      IsarCore.writeNull(writer, 6);
+    } else {
+      IsarCore.writeString(writer, 6, value);
     }
   }
-  bytesCount += 3 + object.vehicleIndex.length * 3;
-  bytesCount += 3 + object.vehicleName.length * 3;
-  return bytesCount;
-}
-
-void _maintenanceRecordSerialize(
-  MaintenanceRecord object,
-  IsarWriter writer,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
-  writer.writeString(offsets[0], object.componentId);
-  writer.writeString(offsets[1], object.componentIdIndex);
-  writer.writeString(offsets[2], object.componentName);
-  writer.writeString(offsets[3], object.formattedDate);
-  writer.writeDateTime(offsets[4], object.maintenanceDate);
-  writer.writeDouble(offsets[5], object.mileageAtMaintenance);
-  writer.writeString(offsets[6], object.notes);
-  writer.writeString(offsets[7], object.vehicleIndex);
-  writer.writeString(offsets[8], object.vehicleName);
-}
-
-MaintenanceRecord _maintenanceRecordDeserialize(
-  Id id,
-  IsarReader reader,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
-  final object = MaintenanceRecord(
-    componentId: reader.readString(offsets[0]),
-    componentName: reader.readString(offsets[2]),
-    maintenanceDate: reader.readDateTime(offsets[4]),
-    mileageAtMaintenance: reader.readDoubleOrNull(offsets[5]),
-    notes: reader.readStringOrNull(offsets[6]),
-    vehicleName: reader.readString(offsets[8]),
-  );
-  object.isarId = id;
-  return object;
-}
-
-P _maintenanceRecordDeserializeProp<P>(
-  IsarReader reader,
-  int propertyId,
-  int offset,
-  Map<Type, List<int>> allOffsets,
-) {
-  switch (propertyId) {
-    case 0:
-      return (reader.readString(offset)) as P;
-    case 1:
-      return (reader.readString(offset)) as P;
-    case 2:
-      return (reader.readString(offset)) as P;
-    case 3:
-      return (reader.readString(offset)) as P;
-    case 4:
-      return (reader.readDateTime(offset)) as P;
-    case 5:
-      return (reader.readDoubleOrNull(offset)) as P;
-    case 6:
-      return (reader.readStringOrNull(offset)) as P;
-    case 7:
-      return (reader.readString(offset)) as P;
-    case 8:
-      return (reader.readString(offset)) as P;
-    default:
-      throw IsarError('Unknown property with id $propertyId');
-  }
-}
-
-Id _maintenanceRecordGetId(MaintenanceRecord object) {
+  IsarCore.writeString(writer, 7, object.vehicleIndex);
+  IsarCore.writeString(writer, 8, object.componentIdIndex);
+  IsarCore.writeString(writer, 9, object.formattedDate);
   return object.isarId;
 }
 
-List<IsarLinkBase<dynamic>> _maintenanceRecordGetLinks(
-    MaintenanceRecord object) {
-  return [];
+@isarProtected
+MaintenanceRecord deserializeMaintenanceRecord(IsarReader reader) {
+  final String _vehicleName;
+  _vehicleName = IsarCore.readString(reader, 1) ?? '';
+  final String _componentId;
+  _componentId = IsarCore.readString(reader, 2) ?? '';
+  final String _componentName;
+  _componentName = IsarCore.readString(reader, 3) ?? '';
+  final DateTime _maintenanceDate;
+  {
+    final value = IsarCore.readLong(reader, 4);
+    if (value == -9223372036854775808) {
+      _maintenanceDate =
+          DateTime.fromMillisecondsSinceEpoch(0, isUtc: true).toLocal();
+    } else {
+      _maintenanceDate =
+          DateTime.fromMicrosecondsSinceEpoch(value, isUtc: true).toLocal();
+    }
+  }
+  final double? _mileageAtMaintenance;
+  {
+    final value = IsarCore.readDouble(reader, 5);
+    if (value.isNaN) {
+      _mileageAtMaintenance = null;
+    } else {
+      _mileageAtMaintenance = value;
+    }
+  }
+  final String? _notes;
+  _notes = IsarCore.readString(reader, 6);
+  final object = MaintenanceRecord(
+    vehicleName: _vehicleName,
+    componentId: _componentId,
+    componentName: _componentName,
+    maintenanceDate: _maintenanceDate,
+    mileageAtMaintenance: _mileageAtMaintenance,
+    notes: _notes,
+  );
+  object.isarId = IsarCore.readId(reader);
+  return object;
 }
 
-void _maintenanceRecordAttach(
-    IsarCollection<dynamic> col, Id id, MaintenanceRecord object) {
-  object.isarId = id;
+@isarProtected
+dynamic deserializeMaintenanceRecordProp(IsarReader reader, int property) {
+  switch (property) {
+    case 0:
+      return IsarCore.readId(reader);
+    case 1:
+      return IsarCore.readString(reader, 1) ?? '';
+    case 2:
+      return IsarCore.readString(reader, 2) ?? '';
+    case 3:
+      return IsarCore.readString(reader, 3) ?? '';
+    case 4:
+      {
+        final value = IsarCore.readLong(reader, 4);
+        if (value == -9223372036854775808) {
+          return DateTime.fromMillisecondsSinceEpoch(0, isUtc: true).toLocal();
+        } else {
+          return DateTime.fromMicrosecondsSinceEpoch(value, isUtc: true)
+              .toLocal();
+        }
+      }
+    case 5:
+      {
+        final value = IsarCore.readDouble(reader, 5);
+        if (value.isNaN) {
+          return null;
+        } else {
+          return value;
+        }
+      }
+    case 6:
+      return IsarCore.readString(reader, 6);
+    case 7:
+      return IsarCore.readString(reader, 7) ?? '';
+    case 8:
+      return IsarCore.readString(reader, 8) ?? '';
+    case 9:
+      return IsarCore.readString(reader, 9) ?? '';
+    default:
+      throw ArgumentError('Unknown property: $property');
+  }
 }
 
-extension MaintenanceRecordQueryWhereSort
-    on QueryBuilder<MaintenanceRecord, MaintenanceRecord, QWhere> {
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterWhere> anyIsarId() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(const IdWhereClause.any());
-    });
-  }
+sealed class _MaintenanceRecordUpdate {
+  bool call({
+    required int isarId,
+    String? vehicleName,
+    String? componentId,
+    String? componentName,
+    DateTime? maintenanceDate,
+    double? mileageAtMaintenance,
+    String? notes,
+    String? vehicleIndex,
+    String? componentIdIndex,
+    String? formattedDate,
+  });
+}
 
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterWhere>
-      anyVehicleIndex() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        const IndexWhereClause.any(indexName: r'vehicleIndex'),
-      );
-    });
-  }
+class _MaintenanceRecordUpdateImpl implements _MaintenanceRecordUpdate {
+  const _MaintenanceRecordUpdateImpl(this.collection);
 
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterWhere>
-      anyComponentIdIndex() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        const IndexWhereClause.any(indexName: r'componentIdIndex'),
-      );
+  final IsarCollection<int, MaintenanceRecord> collection;
+
+  @override
+  bool call({
+    required int isarId,
+    Object? vehicleName = ignore,
+    Object? componentId = ignore,
+    Object? componentName = ignore,
+    Object? maintenanceDate = ignore,
+    Object? mileageAtMaintenance = ignore,
+    Object? notes = ignore,
+    Object? vehicleIndex = ignore,
+    Object? componentIdIndex = ignore,
+    Object? formattedDate = ignore,
+  }) {
+    return collection.updateProperties([
+          isarId
+        ], {
+          if (vehicleName != ignore) 1: vehicleName as String?,
+          if (componentId != ignore) 2: componentId as String?,
+          if (componentName != ignore) 3: componentName as String?,
+          if (maintenanceDate != ignore) 4: maintenanceDate as DateTime?,
+          if (mileageAtMaintenance != ignore)
+            5: mileageAtMaintenance as double?,
+          if (notes != ignore) 6: notes as String?,
+          if (vehicleIndex != ignore) 7: vehicleIndex as String?,
+          if (componentIdIndex != ignore) 8: componentIdIndex as String?,
+          if (formattedDate != ignore) 9: formattedDate as String?,
+        }) >
+        0;
+  }
+}
+
+sealed class _MaintenanceRecordUpdateAll {
+  int call({
+    required List<int> isarId,
+    String? vehicleName,
+    String? componentId,
+    String? componentName,
+    DateTime? maintenanceDate,
+    double? mileageAtMaintenance,
+    String? notes,
+    String? vehicleIndex,
+    String? componentIdIndex,
+    String? formattedDate,
+  });
+}
+
+class _MaintenanceRecordUpdateAllImpl implements _MaintenanceRecordUpdateAll {
+  const _MaintenanceRecordUpdateAllImpl(this.collection);
+
+  final IsarCollection<int, MaintenanceRecord> collection;
+
+  @override
+  int call({
+    required List<int> isarId,
+    Object? vehicleName = ignore,
+    Object? componentId = ignore,
+    Object? componentName = ignore,
+    Object? maintenanceDate = ignore,
+    Object? mileageAtMaintenance = ignore,
+    Object? notes = ignore,
+    Object? vehicleIndex = ignore,
+    Object? componentIdIndex = ignore,
+    Object? formattedDate = ignore,
+  }) {
+    return collection.updateProperties(isarId, {
+      if (vehicleName != ignore) 1: vehicleName as String?,
+      if (componentId != ignore) 2: componentId as String?,
+      if (componentName != ignore) 3: componentName as String?,
+      if (maintenanceDate != ignore) 4: maintenanceDate as DateTime?,
+      if (mileageAtMaintenance != ignore) 5: mileageAtMaintenance as double?,
+      if (notes != ignore) 6: notes as String?,
+      if (vehicleIndex != ignore) 7: vehicleIndex as String?,
+      if (componentIdIndex != ignore) 8: componentIdIndex as String?,
+      if (formattedDate != ignore) 9: formattedDate as String?,
     });
   }
 }
 
-extension MaintenanceRecordQueryWhere
-    on QueryBuilder<MaintenanceRecord, MaintenanceRecord, QWhereClause> {
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterWhereClause>
-      isarIdEqualTo(Id isarId) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: isarId,
-        upper: isarId,
-      ));
-    });
-  }
+extension MaintenanceRecordUpdate on IsarCollection<int, MaintenanceRecord> {
+  _MaintenanceRecordUpdate get update => _MaintenanceRecordUpdateImpl(this);
 
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterWhereClause>
-      isarIdNotEqualTo(Id isarId) {
-    return QueryBuilder.apply(this, (query) {
-      if (query.whereSort == Sort.asc) {
-        return query
-            .addWhereClause(
-              IdWhereClause.lessThan(upper: isarId, includeUpper: false),
-            )
-            .addWhereClause(
-              IdWhereClause.greaterThan(lower: isarId, includeLower: false),
-            );
-      } else {
-        return query
-            .addWhereClause(
-              IdWhereClause.greaterThan(lower: isarId, includeLower: false),
-            )
-            .addWhereClause(
-              IdWhereClause.lessThan(upper: isarId, includeUpper: false),
-            );
-      }
-    });
-  }
+  _MaintenanceRecordUpdateAll get updateAll =>
+      _MaintenanceRecordUpdateAllImpl(this);
+}
 
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterWhereClause>
-      isarIdGreaterThan(Id isarId, {bool include = false}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IdWhereClause.greaterThan(lower: isarId, includeLower: include),
-      );
-    });
-  }
+sealed class _MaintenanceRecordQueryUpdate {
+  int call({
+    String? vehicleName,
+    String? componentId,
+    String? componentName,
+    DateTime? maintenanceDate,
+    double? mileageAtMaintenance,
+    String? notes,
+    String? vehicleIndex,
+    String? componentIdIndex,
+    String? formattedDate,
+  });
+}
 
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterWhereClause>
-      isarIdLessThan(Id isarId, {bool include = false}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IdWhereClause.lessThan(upper: isarId, includeUpper: include),
-      );
-    });
-  }
+class _MaintenanceRecordQueryUpdateImpl
+    implements _MaintenanceRecordQueryUpdate {
+  const _MaintenanceRecordQueryUpdateImpl(this.query, {this.limit});
 
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterWhereClause>
-      isarIdBetween(
-    Id lowerIsarId,
-    Id upperIsarId, {
-    bool includeLower = true,
-    bool includeUpper = true,
+  final IsarQuery<MaintenanceRecord> query;
+  final int? limit;
+
+  @override
+  int call({
+    Object? vehicleName = ignore,
+    Object? componentId = ignore,
+    Object? componentName = ignore,
+    Object? maintenanceDate = ignore,
+    Object? mileageAtMaintenance = ignore,
+    Object? notes = ignore,
+    Object? vehicleIndex = ignore,
+    Object? componentIdIndex = ignore,
+    Object? formattedDate = ignore,
   }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: lowerIsarId,
-        includeLower: includeLower,
-        upper: upperIsarId,
-        includeUpper: includeUpper,
-      ));
+    return query.updateProperties(limit: limit, {
+      if (vehicleName != ignore) 1: vehicleName as String?,
+      if (componentId != ignore) 2: componentId as String?,
+      if (componentName != ignore) 3: componentName as String?,
+      if (maintenanceDate != ignore) 4: maintenanceDate as DateTime?,
+      if (mileageAtMaintenance != ignore) 5: mileageAtMaintenance as double?,
+      if (notes != ignore) 6: notes as String?,
+      if (vehicleIndex != ignore) 7: vehicleIndex as String?,
+      if (componentIdIndex != ignore) 8: componentIdIndex as String?,
+      if (formattedDate != ignore) 9: formattedDate as String?,
     });
   }
+}
 
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterWhereClause>
-      vehicleIndexEqualTo(String vehicleIndex) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'vehicleIndex',
-        value: [vehicleIndex],
-      ));
-    });
-  }
+extension MaintenanceRecordQueryUpdate on IsarQuery<MaintenanceRecord> {
+  _MaintenanceRecordQueryUpdate get updateFirst =>
+      _MaintenanceRecordQueryUpdateImpl(this, limit: 1);
 
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterWhereClause>
-      vehicleIndexNotEqualTo(String vehicleIndex) {
-    return QueryBuilder.apply(this, (query) {
-      if (query.whereSort == Sort.asc) {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'vehicleIndex',
-              lower: [],
-              upper: [vehicleIndex],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'vehicleIndex',
-              lower: [vehicleIndex],
-              includeLower: false,
-              upper: [],
-            ));
-      } else {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'vehicleIndex',
-              lower: [vehicleIndex],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'vehicleIndex',
-              lower: [],
-              upper: [vehicleIndex],
-              includeUpper: false,
-            ));
-      }
-    });
-  }
+  _MaintenanceRecordQueryUpdate get updateAll =>
+      _MaintenanceRecordQueryUpdateImpl(this);
+}
 
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterWhereClause>
-      vehicleIndexGreaterThan(
-    String vehicleIndex, {
-    bool include = false,
+class _MaintenanceRecordQueryBuilderUpdateImpl
+    implements _MaintenanceRecordQueryUpdate {
+  const _MaintenanceRecordQueryBuilderUpdateImpl(this.query, {this.limit});
+
+  final QueryBuilder<MaintenanceRecord, MaintenanceRecord, QOperations> query;
+  final int? limit;
+
+  @override
+  int call({
+    Object? vehicleName = ignore,
+    Object? componentId = ignore,
+    Object? componentName = ignore,
+    Object? maintenanceDate = ignore,
+    Object? mileageAtMaintenance = ignore,
+    Object? notes = ignore,
+    Object? vehicleIndex = ignore,
+    Object? componentIdIndex = ignore,
+    Object? formattedDate = ignore,
   }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'vehicleIndex',
-        lower: [vehicleIndex],
-        includeLower: include,
-        upper: [],
-      ));
-    });
+    final q = query.build();
+    try {
+      return q.updateProperties(limit: limit, {
+        if (vehicleName != ignore) 1: vehicleName as String?,
+        if (componentId != ignore) 2: componentId as String?,
+        if (componentName != ignore) 3: componentName as String?,
+        if (maintenanceDate != ignore) 4: maintenanceDate as DateTime?,
+        if (mileageAtMaintenance != ignore) 5: mileageAtMaintenance as double?,
+        if (notes != ignore) 6: notes as String?,
+        if (vehicleIndex != ignore) 7: vehicleIndex as String?,
+        if (componentIdIndex != ignore) 8: componentIdIndex as String?,
+        if (formattedDate != ignore) 9: formattedDate as String?,
+      });
+    } finally {
+      q.close();
+    }
   }
+}
 
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterWhereClause>
-      vehicleIndexLessThan(
-    String vehicleIndex, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'vehicleIndex',
-        lower: [],
-        upper: [vehicleIndex],
-        includeUpper: include,
-      ));
-    });
-  }
+extension MaintenanceRecordQueryBuilderUpdate
+    on QueryBuilder<MaintenanceRecord, MaintenanceRecord, QOperations> {
+  _MaintenanceRecordQueryUpdate get updateFirst =>
+      _MaintenanceRecordQueryBuilderUpdateImpl(this, limit: 1);
 
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterWhereClause>
-      vehicleIndexBetween(
-    String lowerVehicleIndex,
-    String upperVehicleIndex, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'vehicleIndex',
-        lower: [lowerVehicleIndex],
-        includeLower: includeLower,
-        upper: [upperVehicleIndex],
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterWhereClause>
-      vehicleIndexStartsWith(String VehicleIndexPrefix) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'vehicleIndex',
-        lower: [VehicleIndexPrefix],
-        upper: ['$VehicleIndexPrefix\u{FFFFF}'],
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterWhereClause>
-      vehicleIndexIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'vehicleIndex',
-        value: [''],
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterWhereClause>
-      vehicleIndexIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      if (query.whereSort == Sort.asc) {
-        return query
-            .addWhereClause(IndexWhereClause.lessThan(
-              indexName: r'vehicleIndex',
-              upper: [''],
-            ))
-            .addWhereClause(IndexWhereClause.greaterThan(
-              indexName: r'vehicleIndex',
-              lower: [''],
-            ));
-      } else {
-        return query
-            .addWhereClause(IndexWhereClause.greaterThan(
-              indexName: r'vehicleIndex',
-              lower: [''],
-            ))
-            .addWhereClause(IndexWhereClause.lessThan(
-              indexName: r'vehicleIndex',
-              upper: [''],
-            ));
-      }
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterWhereClause>
-      componentIdIndexEqualTo(String componentIdIndex) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'componentIdIndex',
-        value: [componentIdIndex],
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterWhereClause>
-      componentIdIndexNotEqualTo(String componentIdIndex) {
-    return QueryBuilder.apply(this, (query) {
-      if (query.whereSort == Sort.asc) {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'componentIdIndex',
-              lower: [],
-              upper: [componentIdIndex],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'componentIdIndex',
-              lower: [componentIdIndex],
-              includeLower: false,
-              upper: [],
-            ));
-      } else {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'componentIdIndex',
-              lower: [componentIdIndex],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'componentIdIndex',
-              lower: [],
-              upper: [componentIdIndex],
-              includeUpper: false,
-            ));
-      }
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterWhereClause>
-      componentIdIndexGreaterThan(
-    String componentIdIndex, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'componentIdIndex',
-        lower: [componentIdIndex],
-        includeLower: include,
-        upper: [],
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterWhereClause>
-      componentIdIndexLessThan(
-    String componentIdIndex, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'componentIdIndex',
-        lower: [],
-        upper: [componentIdIndex],
-        includeUpper: include,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterWhereClause>
-      componentIdIndexBetween(
-    String lowerComponentIdIndex,
-    String upperComponentIdIndex, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'componentIdIndex',
-        lower: [lowerComponentIdIndex],
-        includeLower: includeLower,
-        upper: [upperComponentIdIndex],
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterWhereClause>
-      componentIdIndexStartsWith(String ComponentIdIndexPrefix) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'componentIdIndex',
-        lower: [ComponentIdIndexPrefix],
-        upper: ['$ComponentIdIndexPrefix\u{FFFFF}'],
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterWhereClause>
-      componentIdIndexIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'componentIdIndex',
-        value: [''],
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterWhereClause>
-      componentIdIndexIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      if (query.whereSort == Sort.asc) {
-        return query
-            .addWhereClause(IndexWhereClause.lessThan(
-              indexName: r'componentIdIndex',
-              upper: [''],
-            ))
-            .addWhereClause(IndexWhereClause.greaterThan(
-              indexName: r'componentIdIndex',
-              lower: [''],
-            ));
-      } else {
-        return query
-            .addWhereClause(IndexWhereClause.greaterThan(
-              indexName: r'componentIdIndex',
-              lower: [''],
-            ))
-            .addWhereClause(IndexWhereClause.lessThan(
-              indexName: r'componentIdIndex',
-              upper: [''],
-            ));
-      }
-    });
-  }
+  _MaintenanceRecordQueryUpdate get updateAll =>
+      _MaintenanceRecordQueryBuilderUpdateImpl(this);
 }
 
 extension MaintenanceRecordQueryFilter
     on QueryBuilder<MaintenanceRecord, MaintenanceRecord, QFilterCondition> {
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      componentIdEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+      isarIdEqualTo(
+    int value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'componentId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      componentIdGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'componentId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      componentIdLessThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'componentId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      componentIdBetween(
-    String lower,
-    String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'componentId',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      componentIdStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'componentId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      componentIdEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'componentId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      componentIdContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'componentId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      componentIdMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'componentId',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      componentIdIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'componentId',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      componentIdIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'componentId',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      componentIdIndexEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'componentIdIndex',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      componentIdIndexGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'componentIdIndex',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      componentIdIndexLessThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'componentIdIndex',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      componentIdIndexBetween(
-    String lower,
-    String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'componentIdIndex',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      componentIdIndexStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'componentIdIndex',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      componentIdIndexEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'componentIdIndex',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      componentIdIndexContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'componentIdIndex',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      componentIdIndexMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'componentIdIndex',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      componentIdIndexIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'componentIdIndex',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      componentIdIndexIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'componentIdIndex',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      componentNameEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'componentName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      componentNameGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'componentName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      componentNameLessThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'componentName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      componentNameBetween(
-    String lower,
-    String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'componentName',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      componentNameStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'componentName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      componentNameEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'componentName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      componentNameContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'componentName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      componentNameMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'componentName',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      componentNameIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'componentName',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      componentNameIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'componentName',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      formattedDateEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'formattedDate',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      formattedDateGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'formattedDate',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      formattedDateLessThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'formattedDate',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      formattedDateBetween(
-    String lower,
-    String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'formattedDate',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      formattedDateStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'formattedDate',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      formattedDateEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'formattedDate',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      formattedDateContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'formattedDate',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      formattedDateMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'formattedDate',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      formattedDateIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'formattedDate',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      formattedDateIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'formattedDate',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      isarIdEqualTo(Id value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'isarId',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 0,
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
       isarIdGreaterThan(
-    Id value, {
-    bool include = false,
-  }) {
+    int value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'isarId',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 0,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      isarIdGreaterThanOrEqualTo(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 0,
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
       isarIdLessThan(
-    Id value, {
-    bool include = false,
-  }) {
+    int value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'isarId',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        LessCondition(
+          property: 0,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      isarIdLessThanOrEqualTo(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 0,
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
       isarIdBetween(
-    Id lower,
-    Id upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
+    int lower,
+    int upper,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'isarId',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      maintenanceDateEqualTo(DateTime value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'maintenanceDate',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      maintenanceDateGreaterThan(
-    DateTime value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'maintenanceDate',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      maintenanceDateLessThan(
-    DateTime value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'maintenanceDate',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      maintenanceDateBetween(
-    DateTime lower,
-    DateTime upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'maintenanceDate',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      mileageAtMaintenanceIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'mileageAtMaintenance',
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      mileageAtMaintenanceIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'mileageAtMaintenance',
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      mileageAtMaintenanceEqualTo(
-    double? value, {
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'mileageAtMaintenance',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      mileageAtMaintenanceGreaterThan(
-    double? value, {
-    bool include = false,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'mileageAtMaintenance',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      mileageAtMaintenanceLessThan(
-    double? value, {
-    bool include = false,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'mileageAtMaintenance',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      mileageAtMaintenanceBetween(
-    double? lower,
-    double? upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'mileageAtMaintenance',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      notesIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'notes',
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      notesIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'notes',
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      notesEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'notes',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      notesGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'notes',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      notesLessThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'notes',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      notesBetween(
-    String? lower,
-    String? upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'notes',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      notesStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'notes',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      notesEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'notes',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      notesContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'notes',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      notesMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'notes',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      notesIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'notes',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      notesIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'notes',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      vehicleIndexEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'vehicleIndex',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      vehicleIndexGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'vehicleIndex',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      vehicleIndexLessThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'vehicleIndex',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      vehicleIndexBetween(
-    String lower,
-    String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'vehicleIndex',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      vehicleIndexStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'vehicleIndex',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      vehicleIndexEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'vehicleIndex',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      vehicleIndexContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'vehicleIndex',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      vehicleIndexMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'vehicleIndex',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      vehicleIndexIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'vehicleIndex',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
-      vehicleIndexIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'vehicleIndex',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 0,
+          lower: lower,
+          upper: upper,
+        ),
+      );
     });
   }
 
@@ -1622,43 +493,77 @@ extension MaintenanceRecordQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'vehicleName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
       vehicleNameGreaterThan(
     String value, {
-    bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'vehicleName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      vehicleNameGreaterThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
       vehicleNameLessThan(
     String value, {
-    bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'vehicleName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        LessCondition(
+          property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      vehicleNameLessThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -1666,19 +571,17 @@ extension MaintenanceRecordQueryFilter
       vehicleNameBetween(
     String lower,
     String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'vehicleName',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 1,
+          lower: lower,
+          upper: upper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -1688,11 +591,13 @@ extension MaintenanceRecordQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'vehicleName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        StartsWithCondition(
+          property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -1702,53 +607,1355 @@ extension MaintenanceRecordQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'vehicleName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        EndsWithCondition(
+          property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
       vehicleNameContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'vehicleName',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        ContainsCondition(
+          property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
       vehicleNameMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'vehicleName',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        MatchesCondition(
+          property: 1,
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
       vehicleNameIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'vehicleName',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        const EqualCondition(
+          property: 1,
+          value: '',
+        ),
+      );
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
       vehicleNameIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'vehicleName',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        const GreaterCondition(
+          property: 1,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentIdEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 2,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentIdGreaterThan(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 2,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentIdGreaterThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 2,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentIdLessThan(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(
+          property: 2,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentIdLessThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 2,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentIdBetween(
+    String lower,
+    String upper, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 2,
+          lower: lower,
+          upper: upper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentIdStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        StartsWithCondition(
+          property: 2,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentIdEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EndsWithCondition(
+          property: 2,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentIdContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        ContainsCondition(
+          property: 2,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentIdMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        MatchesCondition(
+          property: 2,
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentIdIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const EqualCondition(
+          property: 2,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentIdIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const GreaterCondition(
+          property: 2,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentNameEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 3,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentNameGreaterThan(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 3,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentNameGreaterThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 3,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentNameLessThan(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(
+          property: 3,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentNameLessThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 3,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentNameBetween(
+    String lower,
+    String upper, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 3,
+          lower: lower,
+          upper: upper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentNameStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        StartsWithCondition(
+          property: 3,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentNameEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EndsWithCondition(
+          property: 3,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentNameContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        ContainsCondition(
+          property: 3,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentNameMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        MatchesCondition(
+          property: 3,
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentNameIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const EqualCondition(
+          property: 3,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentNameIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const GreaterCondition(
+          property: 3,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      maintenanceDateEqualTo(
+    DateTime value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 4,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      maintenanceDateGreaterThan(
+    DateTime value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 4,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      maintenanceDateGreaterThanOrEqualTo(
+    DateTime value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 4,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      maintenanceDateLessThan(
+    DateTime value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(
+          property: 4,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      maintenanceDateLessThanOrEqualTo(
+    DateTime value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 4,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      maintenanceDateBetween(
+    DateTime lower,
+    DateTime upper,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 4,
+          lower: lower,
+          upper: upper,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      mileageAtMaintenanceIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 5));
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      mileageAtMaintenanceIsNotNull() {
+    return QueryBuilder.apply(not(), (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 5));
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      mileageAtMaintenanceEqualTo(
+    double? value, {
+    double epsilon = Filter.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 5,
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      mileageAtMaintenanceGreaterThan(
+    double? value, {
+    double epsilon = Filter.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 5,
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      mileageAtMaintenanceGreaterThanOrEqualTo(
+    double? value, {
+    double epsilon = Filter.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 5,
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      mileageAtMaintenanceLessThan(
+    double? value, {
+    double epsilon = Filter.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(
+          property: 5,
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      mileageAtMaintenanceLessThanOrEqualTo(
+    double? value, {
+    double epsilon = Filter.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 5,
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      mileageAtMaintenanceBetween(
+    double? lower,
+    double? upper, {
+    double epsilon = Filter.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 5,
+          lower: lower,
+          upper: upper,
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      notesIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 6));
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      notesIsNotNull() {
+    return QueryBuilder.apply(not(), (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 6));
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      notesEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 6,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      notesGreaterThan(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 6,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      notesGreaterThanOrEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 6,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      notesLessThan(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(
+          property: 6,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      notesLessThanOrEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 6,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      notesBetween(
+    String? lower,
+    String? upper, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 6,
+          lower: lower,
+          upper: upper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      notesStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        StartsWithCondition(
+          property: 6,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      notesEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EndsWithCondition(
+          property: 6,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      notesContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        ContainsCondition(
+          property: 6,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      notesMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        MatchesCondition(
+          property: 6,
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      notesIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const EqualCondition(
+          property: 6,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      notesIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const GreaterCondition(
+          property: 6,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      vehicleIndexEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 7,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      vehicleIndexGreaterThan(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 7,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      vehicleIndexGreaterThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 7,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      vehicleIndexLessThan(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(
+          property: 7,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      vehicleIndexLessThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 7,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      vehicleIndexBetween(
+    String lower,
+    String upper, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 7,
+          lower: lower,
+          upper: upper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      vehicleIndexStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        StartsWithCondition(
+          property: 7,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      vehicleIndexEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EndsWithCondition(
+          property: 7,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      vehicleIndexContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        ContainsCondition(
+          property: 7,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      vehicleIndexMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        MatchesCondition(
+          property: 7,
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      vehicleIndexIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const EqualCondition(
+          property: 7,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      vehicleIndexIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const GreaterCondition(
+          property: 7,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentIdIndexEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 8,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentIdIndexGreaterThan(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 8,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentIdIndexGreaterThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 8,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentIdIndexLessThan(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(
+          property: 8,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentIdIndexLessThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 8,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentIdIndexBetween(
+    String lower,
+    String upper, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 8,
+          lower: lower,
+          upper: upper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentIdIndexStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        StartsWithCondition(
+          property: 8,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentIdIndexEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EndsWithCondition(
+          property: 8,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentIdIndexContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        ContainsCondition(
+          property: 8,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentIdIndexMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        MatchesCondition(
+          property: 8,
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentIdIndexIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const EqualCondition(
+          property: 8,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      componentIdIndexIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const GreaterCondition(
+          property: 8,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      formattedDateEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 9,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      formattedDateGreaterThan(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 9,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      formattedDateGreaterThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 9,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      formattedDateLessThan(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(
+          property: 9,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      formattedDateLessThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 9,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      formattedDateBetween(
+    String lower,
+    String upper, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 9,
+          lower: lower,
+          upper: upper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      formattedDateStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        StartsWithCondition(
+          property: 9,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      formattedDateEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EndsWithCondition(
+          property: 9,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      formattedDateContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        ContainsCondition(
+          property: 9,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      formattedDateMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        MatchesCondition(
+          property: 9,
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      formattedDateIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const EqualCondition(
+          property: 9,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterFilterCondition>
+      formattedDateIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const GreaterCondition(
+          property: 9,
+          value: '',
+        ),
+      );
     });
   }
 }
@@ -1756,134 +1963,194 @@ extension MaintenanceRecordQueryFilter
 extension MaintenanceRecordQueryObject
     on QueryBuilder<MaintenanceRecord, MaintenanceRecord, QFilterCondition> {}
 
-extension MaintenanceRecordQueryLinks
-    on QueryBuilder<MaintenanceRecord, MaintenanceRecord, QFilterCondition> {}
-
 extension MaintenanceRecordQuerySortBy
     on QueryBuilder<MaintenanceRecord, MaintenanceRecord, QSortBy> {
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
-      sortByComponentId() {
+      sortByIsarId() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'componentId', Sort.asc);
+      return query.addSortBy(0);
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
-      sortByComponentIdDesc() {
+      sortByIsarIdDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'componentId', Sort.desc);
+      return query.addSortBy(0, sort: Sort.desc);
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
-      sortByComponentIdIndex() {
+      sortByVehicleName({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'componentIdIndex', Sort.asc);
+      return query.addSortBy(
+        1,
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
-      sortByComponentIdIndexDesc() {
+      sortByVehicleNameDesc({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'componentIdIndex', Sort.desc);
+      return query.addSortBy(
+        1,
+        sort: Sort.desc,
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
-      sortByComponentName() {
+      sortByComponentId({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'componentName', Sort.asc);
+      return query.addSortBy(
+        2,
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
-      sortByComponentNameDesc() {
+      sortByComponentIdDesc({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'componentName', Sort.desc);
+      return query.addSortBy(
+        2,
+        sort: Sort.desc,
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
-      sortByFormattedDate() {
+      sortByComponentName({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'formattedDate', Sort.asc);
+      return query.addSortBy(
+        3,
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
-      sortByFormattedDateDesc() {
+      sortByComponentNameDesc({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'formattedDate', Sort.desc);
+      return query.addSortBy(
+        3,
+        sort: Sort.desc,
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
       sortByMaintenanceDate() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'maintenanceDate', Sort.asc);
+      return query.addSortBy(4);
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
       sortByMaintenanceDateDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'maintenanceDate', Sort.desc);
+      return query.addSortBy(4, sort: Sort.desc);
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
       sortByMileageAtMaintenance() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'mileageAtMaintenance', Sort.asc);
+      return query.addSortBy(5);
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
       sortByMileageAtMaintenanceDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'mileageAtMaintenance', Sort.desc);
+      return query.addSortBy(5, sort: Sort.desc);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy> sortByNotes(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(
+        6,
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
-      sortByNotes() {
+      sortByNotesDesc({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'notes', Sort.asc);
+      return query.addSortBy(
+        6,
+        sort: Sort.desc,
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
-      sortByNotesDesc() {
+      sortByVehicleIndex({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'notes', Sort.desc);
+      return query.addSortBy(
+        7,
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
-      sortByVehicleIndex() {
+      sortByVehicleIndexDesc({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'vehicleIndex', Sort.asc);
+      return query.addSortBy(
+        7,
+        sort: Sort.desc,
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
-      sortByVehicleIndexDesc() {
+      sortByComponentIdIndex({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'vehicleIndex', Sort.desc);
+      return query.addSortBy(
+        8,
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
-      sortByVehicleName() {
+      sortByComponentIdIndexDesc({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'vehicleName', Sort.asc);
+      return query.addSortBy(
+        8,
+        sort: Sort.desc,
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
-      sortByVehicleNameDesc() {
+      sortByFormattedDate({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'vehicleName', Sort.desc);
+      return query.addSortBy(
+        9,
+        caseSensitive: caseSensitive,
+      );
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
+      sortByFormattedDateDesc({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(
+        9,
+        sort: Sort.desc,
+        caseSensitive: caseSensitive,
+      );
     });
   }
 }
@@ -1891,282 +2158,423 @@ extension MaintenanceRecordQuerySortBy
 extension MaintenanceRecordQuerySortThenBy
     on QueryBuilder<MaintenanceRecord, MaintenanceRecord, QSortThenBy> {
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
-      thenByComponentId() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'componentId', Sort.asc);
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
-      thenByComponentIdDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'componentId', Sort.desc);
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
-      thenByComponentIdIndex() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'componentIdIndex', Sort.asc);
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
-      thenByComponentIdIndexDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'componentIdIndex', Sort.desc);
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
-      thenByComponentName() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'componentName', Sort.asc);
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
-      thenByComponentNameDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'componentName', Sort.desc);
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
-      thenByFormattedDate() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'formattedDate', Sort.asc);
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
-      thenByFormattedDateDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'formattedDate', Sort.desc);
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
       thenByIsarId() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isarId', Sort.asc);
+      return query.addSortBy(0);
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
       thenByIsarIdDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isarId', Sort.desc);
+      return query.addSortBy(0, sort: Sort.desc);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
+      thenByVehicleName({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(1, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
+      thenByVehicleNameDesc({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(1, sort: Sort.desc, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
+      thenByComponentId({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(2, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
+      thenByComponentIdDesc({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(2, sort: Sort.desc, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
+      thenByComponentName({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(3, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
+      thenByComponentNameDesc({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(3, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
       thenByMaintenanceDate() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'maintenanceDate', Sort.asc);
+      return query.addSortBy(4);
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
       thenByMaintenanceDateDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'maintenanceDate', Sort.desc);
+      return query.addSortBy(4, sort: Sort.desc);
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
       thenByMileageAtMaintenance() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'mileageAtMaintenance', Sort.asc);
+      return query.addSortBy(5);
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
       thenByMileageAtMaintenanceDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'mileageAtMaintenance', Sort.desc);
+      return query.addSortBy(5, sort: Sort.desc);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy> thenByNotes(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(6, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
-      thenByNotes() {
+      thenByNotesDesc({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'notes', Sort.asc);
+      return query.addSortBy(6, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
-      thenByNotesDesc() {
+      thenByVehicleIndex({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'notes', Sort.desc);
+      return query.addSortBy(7, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
-      thenByVehicleIndex() {
+      thenByVehicleIndexDesc({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'vehicleIndex', Sort.asc);
+      return query.addSortBy(7, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
-      thenByVehicleIndexDesc() {
+      thenByComponentIdIndex({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'vehicleIndex', Sort.desc);
+      return query.addSortBy(8, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
-      thenByVehicleName() {
+      thenByComponentIdIndexDesc({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'vehicleName', Sort.asc);
+      return query.addSortBy(8, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
-      thenByVehicleNameDesc() {
+      thenByFormattedDate({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'vehicleName', Sort.desc);
+      return query.addSortBy(9, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterSortBy>
+      thenByFormattedDateDesc({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(9, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 }
 
 extension MaintenanceRecordQueryWhereDistinct
     on QueryBuilder<MaintenanceRecord, MaintenanceRecord, QDistinct> {
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QDistinct>
-      distinctByComponentId({bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'componentId', caseSensitive: caseSensitive);
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QDistinct>
-      distinctByComponentIdIndex({bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'componentIdIndex',
-          caseSensitive: caseSensitive);
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QDistinct>
-      distinctByComponentName({bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'componentName',
-          caseSensitive: caseSensitive);
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QDistinct>
-      distinctByFormattedDate({bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'formattedDate',
-          caseSensitive: caseSensitive);
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QDistinct>
-      distinctByMaintenanceDate() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'maintenanceDate');
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QDistinct>
-      distinctByMileageAtMaintenance() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'mileageAtMaintenance');
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QDistinct> distinctByNotes(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'notes', caseSensitive: caseSensitive);
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QDistinct>
-      distinctByVehicleIndex({bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'vehicleIndex', caseSensitive: caseSensitive);
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QDistinct>
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterDistinct>
       distinctByVehicleName({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'vehicleName', caseSensitive: caseSensitive);
+      return query.addDistinctBy(1, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterDistinct>
+      distinctByComponentId({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(2, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterDistinct>
+      distinctByComponentName({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(3, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterDistinct>
+      distinctByMaintenanceDate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(4);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterDistinct>
+      distinctByMileageAtMaintenance() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(5);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterDistinct>
+      distinctByNotes({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(6, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterDistinct>
+      distinctByVehicleIndex({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(7, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterDistinct>
+      distinctByComponentIdIndex({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(8, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, MaintenanceRecord, QAfterDistinct>
+      distinctByFormattedDate({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(9, caseSensitive: caseSensitive);
     });
   }
 }
 
-extension MaintenanceRecordQueryProperty
-    on QueryBuilder<MaintenanceRecord, MaintenanceRecord, QQueryProperty> {
-  QueryBuilder<MaintenanceRecord, int, QQueryOperations> isarIdProperty() {
+extension MaintenanceRecordQueryProperty1
+    on QueryBuilder<MaintenanceRecord, MaintenanceRecord, QProperty> {
+  QueryBuilder<MaintenanceRecord, int, QAfterProperty> isarIdProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'isarId');
+      return query.addProperty(0);
     });
   }
 
-  QueryBuilder<MaintenanceRecord, String, QQueryOperations>
-      componentIdProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'componentId');
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, String, QQueryOperations>
-      componentIdIndexProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'componentIdIndex');
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, String, QQueryOperations>
-      componentNameProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'componentName');
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, String, QQueryOperations>
-      formattedDateProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'formattedDate');
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, DateTime, QQueryOperations>
-      maintenanceDateProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'maintenanceDate');
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, double?, QQueryOperations>
-      mileageAtMaintenanceProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'mileageAtMaintenance');
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, String?, QQueryOperations> notesProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'notes');
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, String, QQueryOperations>
-      vehicleIndexProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'vehicleIndex');
-    });
-  }
-
-  QueryBuilder<MaintenanceRecord, String, QQueryOperations>
+  QueryBuilder<MaintenanceRecord, String, QAfterProperty>
       vehicleNameProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'vehicleName');
+      return query.addProperty(1);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, String, QAfterProperty>
+      componentIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(2);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, String, QAfterProperty>
+      componentNameProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(3);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, DateTime, QAfterProperty>
+      maintenanceDateProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(4);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, double?, QAfterProperty>
+      mileageAtMaintenanceProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(5);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, String?, QAfterProperty> notesProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(6);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, String, QAfterProperty>
+      vehicleIndexProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(7);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, String, QAfterProperty>
+      componentIdIndexProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(8);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, String, QAfterProperty>
+      formattedDateProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(9);
+    });
+  }
+}
+
+extension MaintenanceRecordQueryProperty2<R>
+    on QueryBuilder<MaintenanceRecord, R, QAfterProperty> {
+  QueryBuilder<MaintenanceRecord, (R, int), QAfterProperty> isarIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(0);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, (R, String), QAfterProperty>
+      vehicleNameProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(1);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, (R, String), QAfterProperty>
+      componentIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(2);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, (R, String), QAfterProperty>
+      componentNameProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(3);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, (R, DateTime), QAfterProperty>
+      maintenanceDateProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(4);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, (R, double?), QAfterProperty>
+      mileageAtMaintenanceProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(5);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, (R, String?), QAfterProperty>
+      notesProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(6);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, (R, String), QAfterProperty>
+      vehicleIndexProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(7);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, (R, String), QAfterProperty>
+      componentIdIndexProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(8);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, (R, String), QAfterProperty>
+      formattedDateProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(9);
+    });
+  }
+}
+
+extension MaintenanceRecordQueryProperty3<R1, R2>
+    on QueryBuilder<MaintenanceRecord, (R1, R2), QAfterProperty> {
+  QueryBuilder<MaintenanceRecord, (R1, R2, int), QOperations> isarIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(0);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, (R1, R2, String), QOperations>
+      vehicleNameProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(1);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, (R1, R2, String), QOperations>
+      componentIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(2);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, (R1, R2, String), QOperations>
+      componentNameProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(3);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, (R1, R2, DateTime), QOperations>
+      maintenanceDateProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(4);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, (R1, R2, double?), QOperations>
+      mileageAtMaintenanceProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(5);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, (R1, R2, String?), QOperations>
+      notesProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(6);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, (R1, R2, String), QOperations>
+      vehicleIndexProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(7);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, (R1, R2, String), QOperations>
+      componentIdIndexProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(8);
+    });
+  }
+
+  QueryBuilder<MaintenanceRecord, (R1, R2, String), QOperations>
+      formattedDateProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(9);
     });
   }
 }

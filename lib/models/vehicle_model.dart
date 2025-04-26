@@ -4,7 +4,8 @@ part 'vehicle_model.g.dart'; // Add part directive
 
 @Collection() // Add Isar Collection annotation
 class Vehicle {
-  Id isarId = Isar.autoIncrement; // Add Isar auto-increment ID
+  @id // Add the @id annotation
+  late int isarId; // Use late non-nullable int for auto-increment in Isar v4
 
   // final String id; // Keep original ID for reference if needed, but not indexed by Isar
   final String name;

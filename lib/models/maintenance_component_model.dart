@@ -13,7 +13,8 @@ enum MaintenanceStatus {
 
 @Collection()
 class MaintenanceComponent {
-  Id isarId = Isar.autoIncrement;
+  @id
+  late int isarId; // Use late non-nullable int for auto-increment in Isar v4
 
   late String name;
   late String vehicle; // Vehicle name or potentially link via IsarLink later
@@ -25,10 +26,10 @@ class MaintenanceComponent {
   DateTime? lastMaintenance;
 
   // Define indexes for querying
-  @Index(type: IndexType.value) // Index vehicle name for filtering
+  @Index() // Update Index annotation for Isar v4
   String get vehicleIndex => vehicle;
 
-  @Index(type: IndexType.value) // Index type for potential filtering
+  @Index() // Update Index annotation for Isar v4
   String get typeIndex => maintenanceType;
 
   // Constructor for creating new instances
