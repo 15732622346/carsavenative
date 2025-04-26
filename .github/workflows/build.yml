@@ -50,6 +50,11 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleRelease
 
+      # 新增：列出 APK 输出目录内容以调试路径
+      - name: List APK Output Directory
+        run: ls -R android/app/build/outputs/apk
+        # 这个命令在工作空间根目录运行，所以路径是相对根目录的
+
       # Upload the generated APK file as an artifact
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
