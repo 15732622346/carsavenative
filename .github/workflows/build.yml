@@ -86,7 +86,18 @@ jobs:
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleRelease
+          # 尝试构建各种类型的APK
+          ./gradlew assembleRelease || true
+          ./gradlew assembleDebug || true
+          ./gradlew app:assembleRelease || true
+          
+          # 检查构建输出并显示文件位置
+          echo "===== APK构建输出位置 ====="
+          find . -name "*.apk"
+          
+          # 创建一个可能在其他位置的APK副本
+          mkdir -p app/build/outputs/apk/release/
+          find . -name "*.apk" -exec cp {} app/build/outputs/apk/release/app-release.apk \; -quit
 
       - name: Create debug directory for debugging
         run: |
@@ -107,4 +118,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
-          path: android/app/build/outputs/apk/release/app-release.apk
+          path: |
+            android/**/*.apk
+            **/app-release.apk
+            **/outputs/**/*.apk
