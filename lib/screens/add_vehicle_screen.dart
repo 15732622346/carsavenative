@@ -5,7 +5,6 @@ import 'package:provider/provider.dart'; // Import Provider
 import '../models/vehicle_model.dart';
 // import '../services/api_service.dart'; // Remove ApiService import
 import '../repositories/local_vehicle_repository.dart'; // Import LocalVehicleRepository
-import '../providers/vehicle_list_provider.dart'; // 导入车辆列表Provider
 
 class AddVehicleScreen extends StatefulWidget {
   const AddVehicleScreen({Key? key}) : super(key: key);
@@ -48,8 +47,6 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
   Future<void> _submitForm() async {
     // Access repository using Provider
     final vehicleRepository = Provider.of<LocalVehicleRepository>(context, listen: false);
-    // 获取VehicleListProvider
-    final vehicleProvider = Provider.of<VehicleListProvider>(context, listen: false);
 
     if (_formKey.currentState!.validate() && _selectedDate != null) {
       setState(() {
@@ -65,12 +62,12 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
           // plateNumber: _plateController.text, // If plate number is added back
         );
 
-        // 使用vehicleProvider添加车辆，确保所有页面同步更新
-        await vehicleProvider.addVehicle(newVehicle);
+        // Call repository method instead of API service
+        await vehicleRepository.addVehicle(newVehicle);
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('车辆添加成功')),
+            const SnackBar(content: Text('车辆添加成功 (本地)')),
           );
           Navigator.pop(context, true); // Return true to indicate success
         }

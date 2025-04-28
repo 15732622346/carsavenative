@@ -117,26 +117,53 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
   
-  final List<Widget> _screens = [
-    const HomeScreen(),
-    const VehicleListScreen(),
-    const MaintenanceScreen(),
-    const ProfileScreen(),
-  ];
+  final PageController _pageController = PageController();
+  
+  final GlobalKey<HomeScreenState> _homeKey = GlobalKey<HomeScreenState>();
+  
+  late final List<Widget> _screens;
+  
+  @override
+  void initState() {
+    super.initState();
+    _screens = [
+      HomeScreen(key: _homeKey),
+      const VehicleListScreen(),
+      const MaintenanceScreen(),
+      const ProfileScreen(),
+    ];
+  }
+  
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-         index: _currentIndex,
+      body: PageView(
+         controller: _pageController,
+         physics: const NeverScrollableScrollPhysics(),
          children: _screens,
+         onPageChanged: (index) {
+           setState(() {
+             _currentIndex = index;
+           });
+         },
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
+          _pageController.jumpToPage(index);
           setState(() {
             _currentIndex = index;
           });
+          if (index == 0) {
+            debugPrint('【日志】点击了首页Tab，准备获取最新数据');
+            _homeKey.currentState?.loadInitialData();
+          }
         },
         type: BottomNavigationBarType.fixed,
         items: const [

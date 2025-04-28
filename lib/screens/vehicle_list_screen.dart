@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // Add import for DateFormat
-import 'package:provider/provider.dart'; // 添加Provider导入
 import '../models/vehicle_model.dart';
 // import '../services/api_service.dart'; // Re-remove ApiService import
 import 'package:isar/isar.dart'; // Re-add Isar Id import
 import '../main.dart'; // Re-add for global isar instance
 import '../repositories/local_vehicle_repository.dart'; // Re-add Local Repository import
-import '../repositories/local_maintenance_repository.dart'; // Import maintenance repo
-import '../providers/vehicle_list_provider.dart'; // 导入车辆列表Provider
 import 'add_vehicle_screen.dart';
+import '../repositories/local_maintenance_repository.dart'; // Import maintenance repo
 
 class VehicleListScreen extends StatefulWidget {
   const VehicleListScreen({Key? key}) : super(key: key);
@@ -78,14 +76,11 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
     });
 
     try {
-      // 通过Provider加载车辆列表
-      final vehicleProvider = Provider.of<VehicleListProvider>(context, listen: false);
-      await vehicleProvider.loadVehicles();
-      
+      // Fetch vehicles from the local repository
+      final vehicles = await _vehicleRepository.getAllVehicles(); 
       if (mounted) {
         setState(() {
-          _vehicles = vehicleProvider.vehicles;
-          _isLoading = false;
+          _vehicles = vehicles;
         });
       }
     } catch (e) {
@@ -96,9 +91,12 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
              _showErrorAlert(context, errorMessage);
            }
          });
-         setState(() {
-           _isLoading = false;
-         });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }
@@ -139,16 +137,10 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
         await _maintenanceRepository.deleteRecordsByVehicle(vehicle.name, createTransaction: false);
       });
 
-      // 使用Provider更新车辆列表状态
-      final vehicleProvider = Provider.of<VehicleListProvider>(context, listen: false);
-      await vehicleProvider.loadVehicles();
+      // Refresh list after successful deletion
+      _loadVehicles();
       
-      // 更新当前页面的车辆列表
       if (mounted) {
-        setState(() {
-          _vehicles = vehicleProvider.vehicles;
-        });
-        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('车辆 "${vehicle.name}" 及关联组件已删除')),
         );
@@ -401,36 +393,20 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
               }
               final newMileage = int.parse(mileageController.text); 
               try {
-                // 记录原始ID以便调试
-                print("更新车辆 ID: ${vehicle.id}, 名称: ${vehicle.name}, 原里程: ${vehicle.mileage}, 新里程: $newMileage");
-                
-                // 直接修改vehicle对象，而不是创建新对象
-                vehicle.mileage = newMileage;
+                // Create the updated vehicle object using copyWith
+                final updatedVehicle = vehicle.copyWith(mileage: newMileage);
 
                 // Call repository update method
-                final updatedVehicle = await _vehicleRepository.updateVehicle(vehicle);
-                
-                // 使用Provider更新车辆列表状态
-                final vehicleProvider = Provider.of<VehicleListProvider>(context, listen: false);
-                await vehicleProvider.updateVehicle(vehicle);
+                await _vehicleRepository.updateVehicle(updatedVehicle);
                 
                 if (mounted) {
                   Navigator.pop(context);
-                  
-                  // 不重新加载整个列表，而是更新当前列表中的车辆
-                  setState(() {
-                    final index = _vehicles.indexWhere((v) => v.id == vehicle.id);
-                    if (index >= 0) {
-                      _vehicles[index] = updatedVehicle;
-                    }
-                  });
-                  
+                  _loadVehicles(); // 刷新列表
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('里程更新成功')),
                   );
                 }
               } catch (e) {
-                print("更新车辆失败，错误: $e");
                 if (mounted) {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(

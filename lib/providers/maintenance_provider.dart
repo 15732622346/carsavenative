@@ -25,6 +25,7 @@ class MaintenanceProvider with ChangeNotifier {
   
   MaintenanceProvider(this._componentRepository, this._recordRepository, this._vehicleRepository) {
     // 在创建时加载车辆列表用于后续操作
+    debugPrint('【Provider】MaintenanceProvider初始化');
     _loadVehicles();
   }
 
@@ -32,8 +33,9 @@ class MaintenanceProvider with ChangeNotifier {
   Future<void> _loadVehicles() async {
     try {
       _cachedVehicles = await _vehicleRepository.getAllVehicles();
+      debugPrint('【Provider】缓存车辆列表加载完成，${_cachedVehicles.length}辆车');
     } catch (e) {
-      print('加载车辆失败: $e');
+      debugPrint('【Provider错误】加载车辆失败: $e');
     }
   }
 
@@ -61,47 +63,96 @@ class MaintenanceProvider with ChangeNotifier {
   /// 加载特定车辆的保养组件
   Future<List<MaintenanceComponent>> loadComponentsForVehicle(String vehicleName) async {
     try {
-      _isLoadingReminders = true;
-      notifyListeners();
+      if (_isLoadingReminders) {
+        debugPrint('【Provider】已经在加载组件中，跳过: $vehicleName');
+        return _vehicleComponents[vehicleName] ?? [];
+      }
       
+      _isLoadingReminders = true;
+      debugPrint('【Provider】设置加载状态，通知UI');
+      notifyUI();
+      
+      debugPrint('【Provider】开始加载车辆组件: $vehicleName');
       final components = await _componentRepository.getComponentsByVehicleName(vehicleName);
+      debugPrint('【Provider】组件加载完成: ${components.length}个');
       _vehicleComponents[vehicleName] = components;
       
+      // 更新该车辆的关键组件
+      debugPrint('【Provider】更新关键组件');
+      _updateCriticalComponentsForVehicleSimple(vehicleName);
+      
       _isLoadingReminders = false;
-      notifyListeners();
+      debugPrint('【Provider】组件加载全部完成，通知UI');
+      notifyUI();
       return components;
     } catch (e) {
+      debugPrint('【Provider错误】加载车辆组件失败: $e');
       _isLoadingReminders = false;
-      notifyListeners();
-      print('加载车辆组件失败: $e');
+      notifyUI();
       rethrow;
     }
+  }
+  
+  /// 简化版的更新关键组件方法，不会触发额外的notifyListeners
+  void _updateCriticalComponentsForVehicleSimple(String vehicleName) {
+    // 移除该车辆的所有关键组件
+    _allCriticalComponents.removeWhere((c) => c.vehicle == vehicleName);
+    
+    // 如果有该车辆的组件信息
+    if (_vehicleComponents.containsKey(vehicleName)) {
+      // 找到对应车辆
+      final vehicleOpt = _cachedVehicles.where((v) => v.name == vehicleName).toList();
+      if (vehicleOpt.isNotEmpty) {
+        final vehicle = vehicleOpt.first;
+        
+        // 从组件列表中找出关键组件
+        final components = _vehicleComponents[vehicleName]!;
+        final criticalForVehicle = components.where((component) {
+          final status = component.getStatus(vehicle.mileage.toDouble(), null);
+          return status == MaintenanceStatus.attention || status == MaintenanceStatus.warning;
+        }).toList();
+        
+        // 添加到全局关键组件列表
+        _allCriticalComponents.addAll(criticalForVehicle);
+      }
+    }
+    // 不会单独调用notifyListeners，减少重新构建次数
   }
   
   /// 加载特定车辆的保养记录
   Future<List<MaintenanceRecord>> loadRecordsForVehicle(String vehicleName) async {
     try {
+      debugPrint('【Provider】开始加载车辆记录: $vehicleName');
       final records = await _recordRepository.getMaintenanceRecords(vehicleName: vehicleName);
+      
+      // 确保记录按日期排序（最新的在前面）
+      records.sort((a, b) => b.maintenanceDate.compareTo(a.maintenanceDate));
+      
       _vehicleRecords[vehicleName] = records;
-      notifyListeners();
+      debugPrint('【Provider】记录加载完成: ${records.length}个，通知UI');
+      notifyUI();
       return records;
     } catch (e) {
-      print('加载车辆记录失败: $e');
+      debugPrint('【Provider错误】加载车辆记录失败: $e');
       rethrow;
     }
   }
   
   /// 加载所有车辆的关键组件
   Future<void> loadAllCriticalComponents(List<Vehicle> vehicles) async {
+    debugPrint('【Provider】开始加载所有车辆的关键组件，${vehicles.length}辆车');
     List<MaintenanceComponent> criticalComponents = [];
     
     for (final vehicle in vehicles) {
       // 确保已加载该车辆的组件
       List<MaintenanceComponent> components;
       if (_vehicleComponents.containsKey(vehicle.name)) {
+        debugPrint('【Provider】使用缓存的组件: ${vehicle.name}');
         components = _vehicleComponents[vehicle.name]!;
       } else {
-        components = await loadComponentsForVehicle(vehicle.name);
+        debugPrint('【Provider】加载车辆组件: ${vehicle.name}');
+        components = await _componentRepository.getComponentsByVehicleName(vehicle.name);
+        _vehicleComponents[vehicle.name] = components;
       }
       
       // 找出需要关注的组件
@@ -110,11 +161,13 @@ class MaintenanceProvider with ChangeNotifier {
         return status == MaintenanceStatus.attention || status == MaintenanceStatus.warning;
       }).toList();
       
+      debugPrint('【Provider】${vehicle.name}有${criticalForVehicle.length}个关键组件');
       criticalComponents.addAll(criticalForVehicle);
     }
     
     _allCriticalComponents = criticalComponents;
-    notifyListeners();
+    debugPrint('【Provider】所有关键组件加载完成，共${criticalComponents.length}个，通知UI');
+    notifyUI(); // 一次性通知所有更改
   }
   
   /// 添加保养组件
@@ -283,5 +336,12 @@ class MaintenanceProvider with ChangeNotifier {
         _allCriticalComponents.addAll(criticalForVehicle);
       }
     }
+    // 不需要在这里调用notifyListeners，已经在loadComponentsForVehicle中调用
+  }
+
+  void notifyUI() {
+    // 自定义方法，添加日志
+    debugPrint('【Provider】触发UI更新 ${DateTime.now()}');
+    notifyListeners();
   }
 }

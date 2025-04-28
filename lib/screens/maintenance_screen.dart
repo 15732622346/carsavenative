@@ -331,63 +331,45 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
 
   // Placeholder for the component card widget
   Widget _buildComponentCard(MaintenanceComponent component, Vehicle? vehicle) {
-    // Determine Status and Color (Logic copied from carsave_app)
+    // 使用组件自身的getStatus方法来确定状态，保持一致性
     String statusText;
     Color statusColor;
-    double remainingValue = double.infinity;
-    bool isWarning = false;
-    bool isAttention = false;
     bool isMileageType = component.maintenanceType == 'mileage';
     double currentMileage = vehicle?.mileage.toDouble() ?? -1.0; // Use -1 if vehicle is null
 
     DateTime now = DateTime.now();
     DateTime startOfToday = DateTime(now.year, now.month, now.day);
-
+    
+    // 使用component.getStatus获取状态，确保与首页状态一致
+    MaintenanceStatus status = MaintenanceStatus.unknown;
+    
     if (currentMileage < 0 && isMileageType) {
       // Cannot determine status if mileage based and vehicle data is missing
       statusText = '状态未知';
       statusColor = Colors.grey;
     } else {
-      if (isMileageType) {
-        if (component.targetMaintenanceMileage != null && component.targetMaintenanceMileage! > 0) {
-          remainingValue = component.targetMaintenanceMileage! - currentMileage;
-          if (remainingValue <= 0) {
-            isWarning = true;
-          } else if (remainingValue <= MaintenanceProgressPainter.mileageAttentionThreshold) {
-            isAttention = true;
-          }
-        } else {
-          // Cannot determine status without a valid target mileage
-          remainingValue = double.infinity;
-        }
-      } else { // Date Type
-        if (component.targetMaintenanceDate != null) {
-          // Compare target date with the START of today
-          remainingValue = component.targetMaintenanceDate!.difference(startOfToday).inDays.toDouble();
-          if (remainingValue < 0) { // Target date is before today
-            isWarning = true;
-          } else if (remainingValue <= MaintenanceProgressPainter.dateAttentionThreshold) {
-            isAttention = true;
-          }
-        } else {
-          // Cannot determine status without a target date
-          remainingValue = double.infinity;
-        }
-      }
-
-      // Assign status text and color based on flags
-      if (isWarning) {
-        statusText = '需要保养';
-        statusColor = Colors.red;
-      } else if (isAttention) {
-        statusText = '注意观察';
-        statusColor = Colors.orange; // Use orange for attention
-      } else if (remainingValue == double.infinity) {
-         statusText = '状态未知'; // If target is missing
-         statusColor = Colors.grey;
-      } else {
-        statusText = '状态良好';
-        statusColor = Colors.green; // Use green for good
+      // 直接调用组件的getStatus方法获取状态
+      status = component.getStatus(currentMileage, null);
+      
+      // 根据状态设置文本和颜色
+      switch (status) {
+        case MaintenanceStatus.warning:
+          statusText = '需要保养';
+          statusColor = Colors.red;
+          break;
+        case MaintenanceStatus.attention:
+          statusText = '注意观察';
+          statusColor = Colors.orange;
+          break;
+        case MaintenanceStatus.good:
+          statusText = '状态良好';
+          statusColor = Colors.green;
+          break;
+        case MaintenanceStatus.unknown:
+        default:
+          statusText = '状态未知';
+          statusColor = Colors.grey;
+          break;
       }
     }
 
