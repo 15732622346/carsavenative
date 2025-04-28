@@ -130,15 +130,15 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
     try {
       await isar.writeTxn(() async {
         // 1. Delete associated maintenance components
-        await _maintenanceRepository.deleteComponentsByVehicle(vehicle.name);
+        await _maintenanceRepository.deleteComponentsByVehicle(vehicle.name, createTransaction: false);
         // 2. Delete the vehicle itself
-        await _vehicleRepository.deleteVehicle(vehicle.id); 
+        await _vehicleRepository.deleteVehicle(vehicle.id, createTransaction: false);
         // 3. Delete associated maintenance records
-        await _maintenanceRepository.deleteRecordsByVehicle(vehicle.name);
+        await _maintenanceRepository.deleteRecordsByVehicle(vehicle.name, createTransaction: false);
       });
 
       // Refresh list after successful deletion
-      _loadVehicles(); 
+      _loadVehicles();
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -393,20 +393,32 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
               }
               final newMileage = int.parse(mileageController.text); 
               try {
-                // Create the updated vehicle object using copyWith
-                final updatedVehicle = vehicle.copyWith(mileage: newMileage);
+                // 记录原始ID以便调试
+                print("更新车辆 ID: ${vehicle.id}, 名称: ${vehicle.name}, 原里程: ${vehicle.mileage}, 新里程: $newMileage");
+                
+                // 直接修改vehicle对象，而不是创建新对象
+                vehicle.mileage = newMileage;
 
                 // Call repository update method
-                await _vehicleRepository.updateVehicle(updatedVehicle);
+                final updatedVehicle = await _vehicleRepository.updateVehicle(vehicle);
                 
                 if (mounted) {
                   Navigator.pop(context);
-                  _loadVehicles(); // 刷新列表
+                  
+                  // 不重新加载整个列表，而是更新当前列表中的车辆
+                  setState(() {
+                    final index = _vehicles.indexWhere((v) => v.id == vehicle.id);
+                    if (index >= 0) {
+                      _vehicles[index] = updatedVehicle;
+                    }
+                  });
+                  
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('里程更新成功')),
                   );
                 }
               } catch (e) {
+                print("更新车辆失败，错误: $e");
                 if (mounted) {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(

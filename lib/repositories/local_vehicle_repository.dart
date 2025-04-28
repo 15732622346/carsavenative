@@ -36,31 +36,41 @@ class LocalVehicleRepository {
 
   // Update an existing vehicle
   Future<Vehicle> updateVehicle(Vehicle vehicle) async {
-    // Fetch existing to ensure it exists before update
-    final existingVehicle = await isar.vehicles.get(vehicle.id);
-    if (existingVehicle == null) {
-      throw Exception("Cannot update vehicle: Not found in local database.");
+    try {
+      // 检查ID是否有效
+      if (vehicle.id <= 0) {
+        throw Exception("无效的车辆ID: ${vehicle.id}");
+      }
+      
+      // 在事务中更新车辆
+      await isar.writeTxn(() async {
+        // 使用put方法覆盖现有记录
+        await isar.vehicles.put(vehicle);
+      });
+      
+      // 验证更新是否成功
+      final updatedVehicle = await isar.vehicles.get(vehicle.id);
+      if (updatedVehicle == null) {
+        throw Exception("更新失败: 无法获取更新后的车辆");
+      }
+      
+      print("更新车辆成功 - ID: ${updatedVehicle.id}, 新里程: ${updatedVehicle.mileage}");
+      return updatedVehicle;
+    } catch (e) {
+      print("更新车辆时出错: $e");
+      throw Exception("更新车辆失败: $e");
     }
-    
-    // Optional: Check for name conflict if name is changed
-    if (vehicle.name != existingVehicle.name) {
-        final conflictingVehicle = await isar.vehicles.filter().nameEqualTo(vehicle.name).findFirst();
-        if (conflictingVehicle != null) {
-             throw Exception('更新失败：已存在同名的车辆，请使用其他名称。');
-        }
-    }
-
-    await isar.writeTxn(() async {
-      await isar.vehicles.put(vehicle);
-    });
-    return vehicle;
   }
 
   // Delete a vehicle
-  Future<void> deleteVehicle(int id) async {
-    await isar.writeTxn(() async {
+  Future<void> deleteVehicle(int id, {bool createTransaction = true}) async {
+    if (createTransaction) {
+      await isar.writeTxn(() async {
+        await isar.vehicles.delete(id);
+      });
+    } else {
       await isar.vehicles.delete(id);
-    });
+    }
   }
 
   // Read All (Stream) - Useful for reactive UI updates

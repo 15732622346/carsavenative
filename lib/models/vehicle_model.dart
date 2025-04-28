@@ -7,12 +7,12 @@ class Vehicle {
   Id id = Isar.autoIncrement;
 
   // final String id; // Keep original ID for reference if needed, but not indexed by Isar
-  final String name;
-  final int year;
-  final int mileage;
-  final DateTime? manufacturingDate;
-  final String? image;
-  final String? plateNumber;  // 添加车牌号字段以兼容原版本
+  String name;
+  int year;
+  int mileage;
+  DateTime? manufacturingDate;
+  String? image;
+  String? plateNumber;  // 添加车牌号字段以兼容原版本
 
   Vehicle({
     // required this.id, // Remove original ID from constructor if not used
@@ -77,8 +77,7 @@ class Vehicle {
     final newManufacturingDate = manufacturingDate ?? this.manufacturingDate;
     final newYear = year ?? (newManufacturingDate?.year ?? this.year);
 
-    return Vehicle(
-      // id: id ?? this.id, // Remove original ID
+    final result = Vehicle(
       name: name ?? this.name,
       year: newYear,
       mileage: mileage ?? this.mileage,
@@ -86,5 +85,10 @@ class Vehicle {
       image: image ?? this.image,
       plateNumber: plateNumber ?? this.plateNumber,
     );
+    
+    // 保留原始ID
+    result.id = this.id;
+    
+    return result;
   }
 } 

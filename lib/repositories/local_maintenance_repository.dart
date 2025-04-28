@@ -32,19 +32,25 @@ class LocalMaintenanceRepository {
 
   /// Deletes all maintenance components associated with a specific vehicle name.
   /// Returns the number of components deleted.
-  Future<int> deleteComponentsByVehicle(String vehicleName) async {
+  /// If createTransaction is false, assumes this is called from within an existing transaction
+  Future<int> deleteComponentsByVehicle(String vehicleName, {bool createTransaction = true}) async {
     final componentsToDelete = await isar.maintenanceComponents
         .filter()
         .vehicleIndexEqualTo(vehicleName)
         .findAll();
     
-    if (componentsToDelete.isNotEmpty) {
+    if (componentsToDelete.isEmpty) {
+      return 0;
+    }
+
+    final List<int> idsToDelete = componentsToDelete.map((c) => c.id).toList();
+    
+    if (createTransaction) {
       return await isar.writeTxn(() async {
-         final List<int> idsToDelete = componentsToDelete.map((c) => c.id).toList();
-         return await isar.maintenanceComponents.deleteAll(idsToDelete);
+        return await isar.maintenanceComponents.deleteAll(idsToDelete);
       });
     } else {
-      return 0;
+      return await isar.maintenanceComponents.deleteAll(idsToDelete);
     }
   }
 
@@ -145,19 +151,25 @@ class LocalMaintenanceRepository {
 
   /// Deletes all maintenance records associated with a specific vehicle name.
   /// Returns the number of records deleted.
-  Future<int> deleteRecordsByVehicle(String vehicleName) async {
+  /// If createTransaction is false, assumes this is called from within an existing transaction
+  Future<int> deleteRecordsByVehicle(String vehicleName, {bool createTransaction = true}) async {
     final recordsToDelete = await isar.maintenanceRecords
         .filter()
         .vehicleIndexEqualTo(vehicleName)
         .findAll();
 
-    if (recordsToDelete.isNotEmpty) {
+    if (recordsToDelete.isEmpty) {
+      return 0;
+    }
+
+    final List<int> idsToDelete = recordsToDelete.map((r) => r.id).toList();
+    
+    if (createTransaction) {
       return await isar.writeTxn(() async {
-         final List<int> idsToDelete = recordsToDelete.map((r) => r.id).toList();
-         return await isar.maintenanceRecords.deleteAll(idsToDelete);
+        return await isar.maintenanceRecords.deleteAll(idsToDelete);
       });
     } else {
-      return 0;
+      return await isar.maintenanceRecords.deleteAll(idsToDelete);
     }
   }
 
