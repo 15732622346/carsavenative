@@ -114,28 +114,53 @@ class MaintenanceComponent {
   /// Returns a status indicating remaining mileage/days or overdue status.
   /// Requires the current vehicle mileage. 
   MaintenanceStatus getStatus(double currentMileage, DateTime? manufacturingDate /* Keep param for now, might remove */) {
-     final mileageAttentionThreshold = maintenanceValue * 0.1; 
-     const dateAttentionThresholdDays = 15;
+     // 使用固定阈值，与MaintenanceProgressPainter保持一致
+     const double mileageAttentionThreshold = 100.0;
+     const double dateAttentionThresholdDays = 15.0;
 
      if (maintenanceType == 'mileage') {
-      if (targetMaintenanceMileage == null) return MaintenanceStatus.unknown;
+      if (targetMaintenanceMileage == null) {
+        debugPrint('组件[$name]: 无目标里程，返回未知状态');
+        return MaintenanceStatus.unknown;
+      }
+      
       final remaining = targetMaintenanceMileage! - currentMileage;
+      
+      debugPrint('组件[$name] 里程状态计算: 目标=${targetMaintenanceMileage}, 当前=$currentMileage, 剩余=$remaining, 警告阈值=$mileageAttentionThreshold');
+      
       if (remaining <= 0) {
+        debugPrint('组件[$name]: 已超出目标里程，需要保养');
         return MaintenanceStatus.warning;
       } else if (remaining <= mileageAttentionThreshold) {
+        debugPrint('组件[$name]: 接近目标里程，注意观察');
         return MaintenanceStatus.attention;
       }
+      
+      debugPrint('组件[$name]: 状态良好');
       return MaintenanceStatus.good;
     } else if (maintenanceType == 'date') {
-       if (targetMaintenanceDate == null) return MaintenanceStatus.unknown;
+       if (targetMaintenanceDate == null) {
+         debugPrint('组件[$name]: 无目标日期，返回未知状态');
+         return MaintenanceStatus.unknown;
+       }
+      
       final remainingDays = targetMaintenanceDate!.difference(DateTime.now()).inDays;
+      
+      debugPrint('组件[$name] 日期状态计算: 目标=${targetMaintenanceDate}, 当前=${DateTime.now()}, 剩余天数=$remainingDays, 警告阈值=$dateAttentionThresholdDays');
+      
        if (remainingDays <= 0) {
+         debugPrint('组件[$name]: 已超出目标日期，需要保养');
          return MaintenanceStatus.warning;
        } else if (remainingDays <= dateAttentionThresholdDays) {
+         debugPrint('组件[$name]: 接近目标日期，注意观察');
          return MaintenanceStatus.attention;
        }
+       
+       debugPrint('组件[$name]: 状态良好');
        return MaintenanceStatus.good;
      }
+     
+     debugPrint('组件[$name]: 未识别的保养类型: $maintenanceType');
      return MaintenanceStatus.unknown;
   }
 

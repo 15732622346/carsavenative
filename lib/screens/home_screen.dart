@@ -6,6 +6,7 @@ import '../models/maintenance_component_model.dart'; // 保养组件模型
 import '../models/maintenance_record_model.dart'; // 保养记录模型
 import 'package:collection/collection.dart'; // 用于 firstWhereOrNull
 import 'package:intl/intl.dart'; // For date formatting
+import 'dart:async'; // 添加Timer导入
 // Use alias for the badges package to avoid name collision
 import 'package:badges/badges.dart' as badges_pkg;
 import 'package:provider/provider.dart'; // 添加Provider导入
@@ -25,16 +26,18 @@ class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  HomeScreenState createState() => HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+// 改为public类型，去掉下划线
+class HomeScreenState extends State<HomeScreen> {
   late SharedPreferences _prefs; // 本地存储实例
 
   // --- State Variables ---
   Vehicle? _currentVehicle;
-  bool _isLoading = true;
+  bool _isLoading = false; // 初始值设为false，避免默认就进入加载状态
   String? _error;
+  bool _initialDataLoaded = false; // 跟踪是否已加载初始数据
   
   // --- State for derived data ---
   int? _trackedDays;
@@ -50,45 +53,82 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _initializeAndLoadData() async {
-     // Initialize SharedPreferences first
+    // Initialize SharedPreferences first
     try {
+      debugPrint('【日志】_initializeAndLoadData - 开始初始化SharedPreferences');
+      // 先确保不在加载状态
+      setState(() {
+        _isLoading = false;
+      });
+      
       _prefs = await SharedPreferences.getInstance();
-      // Now load the initial data
-      await _loadInitialData();
+      debugPrint('【日志】_initializeAndLoadData - SharedPreferences初始化完成');
+      
+      // 确保只加载一次初始数据
+      if (!_initialDataLoaded) {
+        _initialDataLoaded = true;
+        // 使用延时确保状态已更新
+        Future.microtask(() {
+          if (mounted) {
+            loadInitialData();
+          }
+        });
+      }
     } catch (e) {
       // Handle potential SharedPreferences init error
+      debugPrint('【错误】_initializeAndLoadData - 初始化SharedPreferences失败: $e');
       if (mounted) {
          setState(() {
            _isLoading = false;
            _error = "初始化本地存储失败: $e";
          });
       }
-      // Use debugPrint instead of print
-      debugPrint("Error initializing SharedPreferences: $e");
     }
   }
 
-  // --- Data Loading Logic ---
-  Future<void> _loadInitialData() async {
-    if (!mounted) return;
+  // 改为public方法，去掉下划线
+  Future<void> loadInitialData() async {
+    if (!mounted) {
+      debugPrint('【日志】loadInitialData - 组件已卸载，不执行加载');
+      return;
+    }
+    if (_isLoading) {
+      debugPrint('【日志】loadInitialData - 已经在加载中，跳过');
+      return; // 防止重复加载
+    }
 
+    debugPrint('【日志】loadInitialData - 开始加载数据 ${DateTime.now()}');
     setState(() {
       _isLoading = true;
       _error = null;
-      _currentVehicle = null; // Reset current vehicle during full reload
-      _trackedDays = null;
-      _lastMaintenanceDate = null;
+    });
+    
+    // 添加超时保护
+    final timeoutTimer = Timer(const Duration(seconds: 10), () {
+      if (mounted && _isLoading) {
+        debugPrint('【日志】loadInitialData - 加载超时');
+        setState(() {
+          _isLoading = false;
+          _error = "加载超时，请重试";
+        });
+      }
     });
 
     try {
       // 使用Provider获取车辆列表
+      debugPrint('【日志】loadInitialData - 准备加载车辆列表');
       final vehicleProvider = Provider.of<VehicleListProvider>(context, listen: false);
       await vehicleProvider.loadVehicles();
       final vehicles = vehicleProvider.vehicles;
+      debugPrint('【日志】拿到数据了 - 车辆列表加载完成，共${vehicles.length}辆车');
       
-      if (!mounted) return;
+      if (!mounted) {
+        debugPrint('【日志】loadInitialData - 组件已卸载，中断加载');
+        return;
+      }
 
       if (vehicles.isEmpty) {
+        debugPrint('【日志】loadInitialData - 没有车辆数据，结束加载');
         setState(() { _isLoading = false; });
         return;
       }
@@ -96,43 +136,63 @@ class _HomeScreenState extends State<HomeScreen> {
       // Determine current vehicle after loading all vehicles
       final int? lastSelectedId = _prefs.getInt(_lastSelectedVehicleIdKey);
       if (lastSelectedId != null) {
+        debugPrint('【日志】loadInitialData - 尝试加载上次选择的车辆ID: $lastSelectedId');
         _currentVehicle = vehicles.firstWhereOrNull((v) => v.id == lastSelectedId);
       }
       // Ensure _currentVehicle is set, defaulting to the first if necessary
       _currentVehicle ??= vehicles.first;
+      debugPrint('【日志】拿到数据了 - 当前选择的车辆: ${_currentVehicle?.name}');
+      
       // Save the potentially updated current vehicle ID
       await _prefs.setInt(_lastSelectedVehicleIdKey, _currentVehicle!.id);
 
       // 使用Provider加载组件和记录
+      debugPrint('【日志】loadInitialData - 准备加载保养组件');
       final maintenanceProvider = Provider.of<MaintenanceProvider>(context, listen: false);
       
       // 加载当前车辆的组件和记录
       if (_currentVehicle != null) {
+        debugPrint('【日志】loadInitialData - 加载车辆组件: ${_currentVehicle!.name}');
         await maintenanceProvider.loadComponentsForVehicle(_currentVehicle!.name);
+        debugPrint('【日志】拿到数据了 - 车辆组件加载完成');
+        
+        debugPrint('【日志】loadInitialData - 加载车辆记录: ${_currentVehicle!.name}');
         final records = await maintenanceProvider.loadRecordsForVehicle(_currentVehicle!.name);
+        debugPrint('【日志】拿到数据了 - 记录加载完成，共${records.length}条');
         
         // 计算派生数据
-        if (records.isNotEmpty) {
+        if (records.isNotEmpty && mounted) {
+          // 查找最近的保养记录（按日期排序，取最新的）
+          records.sort((a, b) => b.maintenanceDate.compareTo(a.maintenanceDate));
           _lastMaintenanceDate = records.first.maintenanceDate;
+          debugPrint('【日志】拿到数据了 - 找到最近一次保养记录：${DateFormat('yyyy-MM-dd').format(_lastMaintenanceDate!)}');
           
+          // 计算跟踪天数（仍然使用最早的记录）
           final earliestRecord = records.reduce((a, b) =>
             a.maintenanceDate.isBefore(b.maintenanceDate) ? a : b);
           _trackedDays = DateTime.now().difference(earliestRecord.maintenanceDate).inDays;
+          
+          debugPrint('【日志】拿到数据了 - 计算派生数据完成，跟踪天数: $_trackedDays');
+        } else {
+          // 如果没有保养记录，将最后保养日期设为null
+          _lastMaintenanceDate = null;
+          debugPrint('【日志】拿到数据了 - 未找到保养记录，显示"暂无保养"');
         }
       }
       
-      // 加载所有车辆的关键组件
-      await maintenanceProvider.loadAllCriticalComponents(vehicles);
+      debugPrint('【日志】拿到数据了 - 所有数据加载完成');
 
-    } catch (e, stackTrace) {
+    } catch (e) {
+      debugPrint('【错误】loadInitialData - 加载错误: $e');
       if (mounted) {
         setState(() {
           _error = "加载车辆信息失败: ${e.toString()}";
         });
       }
-      debugPrint("Error loading initial data: $e\nStack trace: $stackTrace");
     } finally {
+      timeoutTimer.cancel(); // 取消超时定时器
       if (mounted) {
+        debugPrint('【日志】loadInitialData - 完成所有加载 ${DateTime.now()}');
         setState(() {
           _isLoading = false;
         });
@@ -142,14 +202,27 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('【日志】HomeScreen.build - 重新构建UI ${DateTime.now()}, isLoading=$_isLoading');
     // 监听所需的Provider
     final vehicleProvider = Provider.of<VehicleListProvider>(context);
     final maintenanceProvider = Provider.of<MaintenanceProvider>(context);
-
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text('车辆保养助手'),
         actions: [
+          // 添加刷新按钮
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: '刷新所有数据',
+            onPressed: _isLoading ? null : () {
+              debugPrint('【日志】刷新按钮点击，准备重新加载数据');
+              // 确保当前不在加载状态
+              if (!_isLoading) {
+                loadInitialData();
+              }
+            },
+          ),
           // --- Notifications Badge ---
           if (maintenanceProvider.criticalComponentCount > 0)
             badges_pkg.Badge(
@@ -202,7 +275,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Text(_error!, style: const TextStyle(fontSize: 16.0)),
               const SizedBox(height: 24.0),
               ElevatedButton(
-                onPressed: _loadInitialData,
+                onPressed: loadInitialData,
                 child: const Text('重试'),
               ),
             ],
@@ -238,7 +311,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // Main content when everything is loaded successfully
     return RefreshIndicator(
-      onRefresh: _loadInitialData, // Pull to refresh
+      onRefresh: loadInitialData, // Pull to refresh
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -296,7 +369,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // --- Helper methods for building specific sections ---
   Widget _buildVehicleStatusCard(MaintenanceProvider maintenanceProvider) {
     // Default status values
-    String lastMaintenanceString = '无记录';
+    String lastMaintenanceString = '暂无保养';
     IconData statusIcon = Icons.check_circle_outline;
     String overallStatus = '良好';
     Color statusColor = Colors.green;
@@ -418,144 +491,186 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         Text('保养提醒', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 8.0),
-        if (criticalReminders.isEmpty)
-          Card(
-            elevation: 1.0,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 16.0), // More padding
-              child: const Text(
-                '暂无需要关注的保养项目',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+        Card(
+          elevation: 1.0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+          child: criticalReminders.isEmpty
+            ? Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 16.0),
+                child: const Text(
+                  '暂无需要关注的保养项目',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                ),
+              )
+            : Column(
+                children: criticalReminders.map((component) {
+                  // 获取组件状态数据
+                  final currentMileage = _currentVehicle?.mileage.toDouble() ?? 0.0;
+                  final status = component.getStatus(currentMileage, null);
+                  
+                  // 计算剩余数据
+                  String remainingText = '';
+                  Color remainingColor = Colors.orange;
+                  
+                  if (component.maintenanceType == 'mileage' && component.targetMaintenanceMileage != null) {
+                    final remaining = component.targetMaintenanceMileage! - currentMileage;
+                    final formattedMileage = NumberFormat.decimalPattern('zh_CN').format(remaining.abs());
+                    if (remaining <= 0) {
+                      remainingText = '$formattedMileage km';
+                      remainingColor = Colors.red;
+                    } else {
+                      remainingText = '$formattedMileage km';
+                      remainingColor = Colors.orange;
+                    }
+                  } else if (component.maintenanceType == 'date' && component.targetMaintenanceDate != null) {
+                    final remainingDays = component.targetMaintenanceDate!.difference(DateTime.now()).inDays;
+                    if (remainingDays < 0) {
+                      remainingText = '${remainingDays.abs()} 天';
+                      remainingColor = Colors.red;
+                    } else {
+                      remainingText = '$remainingDays 天';
+                      remainingColor = Colors.orange;
+                    }
+                  }
+                  
+                  return Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // 第一行：组件名称
+                            Text(
+                              component.name,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4.0),
+                            // 第二行：详细信息
+                            Row(
+                              children: [
+                                Text(
+                                  '类型: ${component.maintenanceType == 'mileage' ? '按里程' : '按时间'}',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                                const SizedBox(width: 16.0),
+                                Text(
+                                  '当前里程: ${NumberFormat.decimalPattern('zh_CN').format(currentMileage)} km',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4.0),
+                            // 第三行：剩余值
+                            Row(
+                              children: [
+                                Text(
+                                  status == MaintenanceStatus.warning ? '已超出: ' : '剩余: ',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: remainingColor,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  remainingText,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: remainingColor,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      // 除了最后一个项目外，都添加分隔线
+                      if (component != criticalReminders.last)
+                        const Divider(height: 1, indent: 16, endIndent: 16),
+                    ],
+                  );
+                }).toList(),
               ),
-            ),
-          )
-        else
-          // Build a list of cards for each critical reminder
-          Column(
-            // Use List.generate for index access if needed, map is fine here
-            children: criticalReminders
-                .map((component) => _buildReminderItemCard(component)) // Use specific card builder
-                .toList(),
-          ),
-      ],
-    );
-  }
-
-  // Builds a Card widget for an individual maintenance reminder item
-  Widget _buildReminderItemCard(MaintenanceComponent component) {
-    // These checks should ideally not fail if logic upstream is correct
-    if (_currentVehicle == null) return const SizedBox.shrink();
-
-    final status = component.getStatus(_currentVehicle!.mileage.toDouble(), null);
-    final currentMileage = _currentVehicle!.mileage;
-    final now = DateTime.now();
-    String statusText = '';
-    Color statusColor = Colors.grey; // Default color
-
-    // Determine status text and color based on type and remaining value
-    if (component.maintenanceType == 'mileage') {
-      if (component.targetMaintenanceMileage != null) {
-        final remainingMileage = component.targetMaintenanceMileage! - currentMileage;
-        final formattedMileage = NumberFormat.decimalPattern('zh_CN').format(remainingMileage.abs());
-        if (remainingMileage <= 0) {
-          statusText = '已超出: $formattedMileage km';
-          statusColor = Colors.red; // Overdue color
-        } else {
-          statusText = '剩余: $formattedMileage km';
-          // Use orange for attention, default green for good (but filtered out earlier)
-          statusColor = (status == MaintenanceStatus.attention) ? Colors.orangeAccent : Colors.green;
-        }
-      } else {
-        statusText = '目标里程未设置'; // Error/unknown state text
-      }
-    } else if (component.maintenanceType == 'date') {
-      if (component.targetMaintenanceDate != null) {
-        final remainingDays = component.targetMaintenanceDate!.difference(now).inDays;
-         if (remainingDays < 0) { // Explicitly check for less than 0
-          statusText = '已超出: ${remainingDays.abs()} 天';
-          statusColor = Colors.red; // Overdue color
-        } else {
-          statusText = '剩余: $remainingDays 天';
-          // Use orange for attention, default green for good (but filtered out earlier)
-           statusColor = (status == MaintenanceStatus.attention) ? Colors.orangeAccent : Colors.green;
-        }
-      } else {
-        statusText = '目标日期未设置'; // Error/unknown state text
-      }
-    }
-
-    return Card(
-      elevation: 1.0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)), // Consistent rounding
-      margin: const EdgeInsets.only(bottom: 12.0), // Spacing between cards
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Component Name (Bold)
-            Text(
-              component.name,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8.0),
-            // Type and Current Mileage
-            Text(
-              '类型: ${component.maintenanceType == 'mileage' ? '按里程' : '按时间'}',
-              style: Theme.of(context).textTheme.bodyMedium
-            ),
-            Text(
-              '当前里程: ${NumberFormat.decimalPattern('zh_CN').format(currentMileage)} km',
-              style: Theme.of(context).textTheme.bodyMedium
-             ),
-            const SizedBox(height: 4.0),
-            // Status Text (Remaining/Overdue) - Colored and Bold
-            Text(
-              statusText,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: statusColor,
-                fontWeight: FontWeight.bold
-              ),
-            ),
-          ],
         ),
-      ),
+      ],
     );
   }
 
   // Builds the static announcements and tips section
   Widget _buildAnnouncementsSection() {
     return Card(
-       elevation: 1.0,
-       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)), // Consistent rounding
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0), // Reduce vertical padding slightly
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Add padding for the title
-            Padding(
-              padding: const EdgeInsets.only(left: 16.0, top: 8.0, bottom: 8.0),
-              child: Text('公告与提示', style: Theme.of(context).textTheme.titleLarge),
+      elevation: 1.0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)), // Consistent rounding
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 添加标题
+          Padding(
+            padding: const EdgeInsets.only(left: 16.0, top: 16.0, bottom: 8.0),
+            child: Text('公告与提示', style: Theme.of(context).textTheme.titleLarge),
+          ),
+          // 测试未开放
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '测试未开放',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4.0),
+                Text(
+                  '此功能将在后续版本中提供',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
             ),
-            ListTile(
-              leading: Icon(Icons.campaign_outlined, color: Theme.of(context).colorScheme.secondary),
-              title: const Text('测试未开放'),
-              subtitle: const Text('此功能将在后续版本中提供'), // More informative subtitle
-              dense: true, // Make list tiles denser
+          ),
+          const Divider(height: 1, indent: 16, endIndent: 16),
+          // 使用小贴士
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '使用小贴士',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4.0),
+                Text(
+                  '定期更新车辆里程可以获得更准确的保养提醒',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
             ),
-            const Divider(height: 1, indent: 16, endIndent: 16), // Add indent to divider
-             ListTile(
-              leading: Icon(Icons.star_outline, color: Theme.of(context).colorScheme.secondary),
-              title: const Text('使用小贴士'),
-              subtitle: const Text('定期更新车辆里程可以获得更准确的保养提醒'),
-              dense: true,
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -602,9 +717,30 @@ class _HomeScreenState extends State<HomeScreen> {
                         setState(() => _currentVehicle = vehicle); // Update selection in memory
                         // Save selection and reload details
                         _prefs.setInt(_lastSelectedVehicleIdKey, vehicle.id).then((_) {
-                          // 重新加载当前车辆的数据
-                          maintenanceProvider.loadComponentsForVehicle(vehicle.name);
-                          maintenanceProvider.loadRecordsForVehicle(vehicle.name);
+                          // 重新加载当前车辆的数据并刷新页面
+                          debugPrint('【日志】车辆选择 - 切换到车辆: ${vehicle.name}');
+                          
+                          // 清空当前保养记录数据
+                          setState(() {
+                            _lastMaintenanceDate = null; // 重置最后保养日期
+                          });
+                          
+                          // 重新加载车辆的保养组件和记录
+                          maintenanceProvider.loadComponentsForVehicle(vehicle.name).then((_) {
+                            // 加载车辆的保养记录
+                            maintenanceProvider.loadRecordsForVehicle(vehicle.name).then((records) {
+                              if (records.isNotEmpty && mounted) {
+                                // 查找最近一次保养记录
+                                records.sort((a, b) => b.maintenanceDate.compareTo(a.maintenanceDate));
+                                setState(() {
+                                  _lastMaintenanceDate = records.first.maintenanceDate;
+                                });
+                                debugPrint('【日志】车辆选择 - 找到最近一次保养记录：${DateFormat('yyyy-MM-dd').format(_lastMaintenanceDate!)}');
+                              } else {
+                                debugPrint('【日志】车辆选择 - 未找到保养记录，显示"暂无保养"');
+                              }
+                            });
+                          });
                         });
                       }
                     },
