@@ -43,6 +43,95 @@ class MaintenanceProgressPainter extends CustomPainter {
     }
     return number.toStringAsFixed(0); // Keep as integer if below 1000
   }
+  
+  // 添加：计算并格式化时间间隔为年月日的辅助方法
+  String formatTimeSpan(DateTime startDate, DateTime endDate) {
+    // 确保开始日期早于结束日期
+    if (startDate.isAfter(endDate)) {
+      final temp = startDate;
+      startDate = endDate;
+      endDate = temp;
+    }
+    
+    // 计算总天数差
+    final differenceInDays = endDate.difference(startDate).inDays;
+    
+    // 计算年数、月数和天数
+    int years = 0;
+    int months = 0;
+    int days = 0;
+    
+    // 临时日期，用于计算
+    DateTime tempDate = DateTime(startDate.year, startDate.month, startDate.day);
+    
+    // 计算年数
+    while (tempDate.year < endDate.year || 
+          (tempDate.year == endDate.year && tempDate.month <= endDate.month && tempDate.day <= endDate.day)) {
+      years++;
+      tempDate = DateTime(tempDate.year + 1, tempDate.month, tempDate.day);
+      
+      // 确保不超过结束日期
+      if (tempDate.isAfter(endDate)) {
+        years--;
+        tempDate = DateTime(tempDate.year - 1, tempDate.month, tempDate.day);
+        break;
+      }
+    }
+    
+    // 计算月数
+    while (tempDate.month < endDate.month || 
+          (tempDate.month == endDate.month && tempDate.day <= endDate.day)) {
+      months++;
+      
+      // 处理月份进位
+      int newMonth = tempDate.month + 1;
+      int newYear = tempDate.year;
+      if (newMonth > 12) {
+        newMonth = 1;
+        newYear++;
+      }
+      
+      // 处理月末日期问题（如2月30日不存在的情况）
+      int newDay = tempDate.day;
+      int lastDayOfMonth = DateTime(newYear, newMonth + 1, 0).day;
+      if (newDay > lastDayOfMonth) {
+        newDay = lastDayOfMonth;
+      }
+      
+      tempDate = DateTime(newYear, newMonth, newDay);
+      
+      // 确保不超过结束日期
+      if (tempDate.isAfter(endDate)) {
+        months--;
+        // 重置tempDate
+        newMonth = tempDate.month - 1;
+        newYear = tempDate.year;
+        if (newMonth < 1) {
+          newMonth = 12;
+          newYear--;
+        }
+        lastDayOfMonth = DateTime(newYear, newMonth + 1, 0).day;
+        newDay = tempDate.day > lastDayOfMonth ? lastDayOfMonth : tempDate.day;
+        tempDate = DateTime(newYear, newMonth, newDay);
+        break;
+      }
+    }
+    
+    // 计算剩余天数
+    days = endDate.difference(tempDate).inDays;
+    
+    // 构建显示字符串
+    String result = '';
+    if (years > 0) {
+      result += '$years年';
+    }
+    if (months > 0 || years > 0) {
+      result += '$months月';
+    }
+    result += '$days日';
+    
+    return result.isEmpty ? '0日' : result; // 确保至少显示"0日"
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -119,8 +208,13 @@ class MaintenanceProgressPainter extends CustomPainter {
 
         // --- Calculate Progress Ratio based on cycle length --- 
         if (cycleValue > 0) {
-            // Progress within the current cycle relative to the cycle length
-            progressRatio = (drivenMileageInCycle / cycleValue).clamp(0.0, 1.5); // Allow overshoot display up to 150% of cycle
+            // 修改：改为计算当前里程与目标里程的比例
+            if (cycleEndValue > 0) {
+                // 直接计算当前里程占目标里程的比例
+                progressRatio = (actualCurrentValue / cycleEndValue).clamp(0.0, 1.0);
+            } else {
+                progressRatio = 0.0; // 目标里程为0，进度为0
+            }
         } else {
             progressRatio = 0.0; // Cycle is 0, progress is 0
         }
@@ -167,6 +261,15 @@ class MaintenanceProgressPainter extends CustomPainter {
 
     // Clamp ratio for drawing top curve parts to avoid visual errors
     double clampedRatio = progressRatio.clamp(0.0, 1.0);
+    
+    // 修改：应用最小显示比例规则（确保每部分至少有10%的显示宽度）
+    if (clampedRatio < 0.1) {
+        // 如果进度小于10%，将其设为10%的最小显示宽度
+        clampedRatio = 0.1;
+    } else if (clampedRatio > 0.9) {
+        // 如果剩余比例小于10%，将进度设为90%，确保剩余部分有10%
+        clampedRatio = 0.9;
+    }
 
     // Calculate split point coordinates
     double splitX = math.pow(1 - clampedRatio, 2) * p0.dx + 2 * (1 - clampedRatio) * clampedRatio * p1.dx + math.pow(clampedRatio, 2) * p2.dx;
@@ -239,7 +342,11 @@ class MaintenanceProgressPainter extends CustomPainter {
       cycleAndRemainingText = '保养周期: $cycleValueStr, ${remainingValue >= 0 ? "剩余" : ""}: $remainingValueStr'; // Combine cycle and remaining
 
     } else { // Date Type
-      drivenText = '当前日期: ${DateFormat('yy-MM-dd').format(startOfToday)}'; // Combine label+value
+      // 修改：显示行驶天数而不是当前日期
+      final DateTime lastDate = lastMaintenanceDate ?? DateTime.now();
+      final String timeSpan = formatTimeSpan(lastDate, startOfToday);
+      drivenText = '行驶天数: $timeSpan'; // 改为显示行驶天数
+      
       targetText = '目标日期: ${DateFormat('yy-MM-dd').format(DateTime(1970).add(Duration(days: cycleEndValue.toInt())))}'; // Combine label+value
       String cycleValueStr = '${cycleValue.toInt()}天'; // Value+unit for cycle
       remainingValue = cycleEndValue - actualCurrentValue; // Remaining days (can be negative)
@@ -260,7 +367,7 @@ class MaintenanceProgressPainter extends CustomPainter {
     // NEW Horizontal Positioning:
     final double progressArcTopX = splitX / 2; // Approx. horizontal center of progress arc
     final double remainingArcTopX = splitX + (size.width - splitX) / 2; // Approx. horizontal center of remaining arc
-    final double targetArcBottomX = size.width * 0.25; // Keep near bottom-left
+    final double targetArcBottomX = size.width * 0.5; // 修改为底部弧线的中心位置
     final double cycleArcBottomX = size.width * 0.75; // Keep near bottom-right
 
     // Define vertical gaps for the combined text lines
@@ -283,13 +390,12 @@ class MaintenanceProgressPainter extends CustomPainter {
         color: Colors.grey[700]!, // Use a neutral color
         fontWeight: FontWeight.normal, fontSize: 12);
 
-    // Bottom Left Value (Target)
+    // 修改：目标里程放在底部弧线的弧底中央
     drawText(
         targetText,
-        Offset(targetArcBottomX, size.height / 2 + bottomCurveHeight + bottomTextGap), // Position below curve near left
-        labelWidth,
-        color: Colors.black87, fontWeight: FontWeight.normal, fontSize: 12); // Normal font weight
-
+        Offset(targetArcBottomX, size.height / 2 + bottomCurveHeight + bottomTextGap), // 定位在底部弧线的最低点下方
+        labelWidth * 1.2, // 略微增加宽度以适应更长的文本
+        color: Colors.black87, fontWeight: FontWeight.normal, fontSize: 12);
     // --- DRAW COMBINED TEXT --- END
 
 

@@ -556,11 +556,59 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      // Optional: Add trailing icons or actions for records?
+                      // 添加删除按钮
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete_outline, size: 20, color: Colors.red),
+                        onPressed: () => _handleDeleteRecord(record),
+                        tooltip: '删除记录',
+                      ),
                     );
                   }).toList(),
       ),
     );
+  }
+
+  // 处理删除保养记录
+  Future<void> _handleDeleteRecord(MaintenanceRecord record) async {
+    // 显示确认对话框
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('确认删除'),
+        content: Text('您确定要删除"${record.componentName}"的保养记录吗？此操作不可撤销。'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('删除'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        // 删除记录
+        final success = await _maintenanceRepository.deleteRecord(record.id);
+        if (success && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('保养记录已删除')),
+          );
+          // 刷新记录列表
+          _loadComponentsAndRecords();
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('删除失败: ${e.toString()}')),
+          );
+        }
+      }
+    }
   }
 
   // --- Action Handlers ---
@@ -651,8 +699,6 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
       } else {
           // --- 3b. Delete Component (User chose not to set next cycle) ---
           await _maintenanceRepository.deleteComponent(component.id);
-          // Delete associated records
-          await _maintenanceRepository.deleteRecordsByComponent(component.id.toString());
           if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('组件 "${component.name}" 已删除')),
@@ -890,8 +936,6 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
       try {
         // Use the repository method directly, passing the int ID
         await _maintenanceRepository.deleteComponent(component.id);
-        // Delete associated records
-        await _maintenanceRepository.deleteRecordsByComponent(component.id.toString());
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('保养项目 "${component.name}" 已删除')),

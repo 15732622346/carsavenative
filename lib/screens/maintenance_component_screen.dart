@@ -11,6 +11,8 @@ import '../repositories/local_component_repository.dart';
 import '../repositories/local_record_repository.dart';
 import 'package:intl/intl.dart'; // Import for date formatting
 import 'dart:ui' as ui; // <-- CHANGE IMPORT TO USE PREFIX 'ui'
+import '../providers/maintenance_provider.dart';
+import '../providers/vehicle_list_provider.dart';
 
 class MaintenanceComponentScreen extends StatefulWidget {
   const MaintenanceComponentScreen({Key? key}) : super(key: key);

@@ -8,10 +8,13 @@ import 'package:collection/collection.dart'; // 用于 firstWhereOrNull
 import 'package:intl/intl.dart'; // For date formatting
 // Use alias for the badges package to avoid name collision
 import 'package:badges/badges.dart' as badges_pkg;
+import 'package:provider/provider.dart'; // 添加Provider导入
 import 'notifications_screen.dart'; // Import the new screen
-import 'package:carsave_app/repositories/local_component_repository.dart';
-import 'package:carsave_app/repositories/local_record_repository.dart';
-import 'package:carsave_app/repositories/local_vehicle_repository.dart';
+import '../providers/vehicle_list_provider.dart'; // 导入车辆列表Provider
+import '../providers/maintenance_provider.dart'; // 导入保养Provider
+import '../repositories/local_component_repository.dart';
+import '../repositories/local_record_repository.dart';
+import '../repositories/local_vehicle_repository.dart';
 import '../main.dart'; // Import main.dart to access the global isar instance
 // Removed unused import: maintenance_component_screen.dart
 // Removed unused import: vehicle_list_screen.dart
@@ -28,30 +31,14 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late SharedPreferences _prefs; // 本地存储实例
 
-  // --- Repositories (Pass the global Isar instance) ---
-  final LocalVehicleRepository _vehicleRepository = LocalVehicleRepository(isar); // Pass isar
-  final LocalComponentRepository _componentRepository = LocalComponentRepository(isar);
-  final LocalRecordRepository _recordRepository = LocalRecordRepository(isar); // Pass isar
-
   // --- State Variables ---
-  List<Vehicle> _vehicles = [];
   Vehicle? _currentVehicle;
-  List<MaintenanceComponent> _reminders = [];
   bool _isLoading = true;
   String? _error;
-  bool _isLoadingReminders = false; // Separate loading state for reminders
-  List<MaintenanceRecord> _maintenanceRecords = []; // Added for records
-  bool _isLoadingRecords = false; // Added loading state for records
-
+  
   // --- State for derived data ---
   int? _trackedDays;
   DateTime? _lastMaintenanceDate;
-
-  // --- Added for Global Notifications ---
-  List<MaintenanceComponent> _allCriticalComponents = []; // Stores all critical components across vehicles
-  int _criticalComponentCount = 0; // Count of critical components
-  bool _isLoadingGlobalNotifications = false; // Loading state for global notifications
-  // --- End Added ---
 
   static const String _lastSelectedVehicleIdKey = 'last_selected_isar_id';
 
@@ -87,67 +74,60 @@ class _HomeScreenState extends State<HomeScreen> {
 
     setState(() {
       _isLoading = true;
-      _isLoadingGlobalNotifications = true;
       _error = null;
       _currentVehicle = null; // Reset current vehicle during full reload
-      _vehicles = [];
-      _reminders = [];
-      _maintenanceRecords = [];
       _trackedDays = null;
       _lastMaintenanceDate = null;
-      _allCriticalComponents = [];
-      _criticalComponentCount = 0;
     });
 
     try {
-      _vehicles = await _vehicleRepository.getAllVehicles();
+      // 使用Provider获取车辆列表
+      final vehicleProvider = Provider.of<VehicleListProvider>(context, listen: false);
+      await vehicleProvider.loadVehicles();
+      final vehicles = vehicleProvider.vehicles;
+      
       if (!mounted) return;
 
-      if (_vehicles.isEmpty) {
-        setState(() { _isLoading = false; _isLoadingGlobalNotifications = false; });
+      if (vehicles.isEmpty) {
+        setState(() { _isLoading = false; });
         return;
       }
 
       // Determine current vehicle after loading all vehicles
       final int? lastSelectedId = _prefs.getInt(_lastSelectedVehicleIdKey);
       if (lastSelectedId != null) {
-        _currentVehicle = _vehicles.firstWhereOrNull((v) => v.id == lastSelectedId);
+        _currentVehicle = vehicles.firstWhereOrNull((v) => v.id == lastSelectedId);
       }
       // Ensure _currentVehicle is set, defaulting to the first if necessary
-      _currentVehicle ??= _vehicles.first;
+      _currentVehicle ??= vehicles.first;
       // Save the potentially updated current vehicle ID
       await _prefs.setInt(_lastSelectedVehicleIdKey, _currentVehicle!.id);
 
-      // Load details specific to the determined current vehicle
-      await _loadDetailsForCurrentVehicle();
-
-      // Load global notifications data AFTER vehicle details are potentially available
-      List<MaintenanceComponent> criticalComponents = [];
-      final List<Future<List<MaintenanceComponent>>> componentFutures = _vehicles
-          .map((vehicle) => _componentRepository.getComponentsByVehicleName(vehicle.name))
-          .toList();
-
-      final List<List<MaintenanceComponent>> results = await Future.wait(componentFutures);
-
-      if (mounted) {
-          for (int i = 0; i < _vehicles.length; i++) {
-              final vehicle = _vehicles[i];
-              final componentsForVehicle = results[i];
-              criticalComponents.addAll(componentsForVehicle.where((component) {
-                  final status = component.getStatus(vehicle.mileage.toDouble(), null);
-                  // Check for both warning and attention for the badge count
-                  return status == MaintenanceStatus.attention || status == MaintenanceStatus.warning;
-              }));
-          }
-          _allCriticalComponents = criticalComponents; // Store all for potential drill-down
-          _criticalComponentCount = criticalComponents.length;
+      // 使用Provider加载组件和记录
+      final maintenanceProvider = Provider.of<MaintenanceProvider>(context, listen: false);
+      
+      // 加载当前车辆的组件和记录
+      if (_currentVehicle != null) {
+        await maintenanceProvider.loadComponentsForVehicle(_currentVehicle!.name);
+        final records = await maintenanceProvider.loadRecordsForVehicle(_currentVehicle!.name);
+        
+        // 计算派生数据
+        if (records.isNotEmpty) {
+          _lastMaintenanceDate = records.first.maintenanceDate;
+          
+          final earliestRecord = records.reduce((a, b) =>
+            a.maintenanceDate.isBefore(b.maintenanceDate) ? a : b);
+          _trackedDays = DateTime.now().difference(earliestRecord.maintenanceDate).inDays;
+        }
       }
+      
+      // 加载所有车辆的关键组件
+      await maintenanceProvider.loadAllCriticalComponents(vehicles);
 
     } catch (e, stackTrace) {
       if (mounted) {
         setState(() {
           _error = "加载车辆信息失败: ${e.toString()}";
-          _isLoadingGlobalNotifications = false; // Ensure this is reset on error
         });
       }
       debugPrint("Error loading initial data: $e\nStack trace: $stackTrace");
@@ -155,74 +135,6 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _isLoadingGlobalNotifications = false;
-        });
-      }
-    }
-  }
-
-  // New function to load both reminders and records for the current vehicle
-  Future<void> _loadDetailsForCurrentVehicle() async {
-    if (_currentVehicle == null) return;
-    if (!mounted) return;
-
-    setState(() {
-      _isLoadingReminders = true;
-      _isLoadingRecords = true;
-      _reminders = [];
-      _maintenanceRecords = [];
-      _trackedDays = null; // Reset derived data
-      _lastMaintenanceDate = null; // Reset derived data
-    });
-
-    try {
-      final results = await Future.wait([
-        _componentRepository.getComponentsByVehicleName(_currentVehicle!.name),
-        _recordRepository.getMaintenanceRecords(vehicleName: _currentVehicle!.name),
-      ]);
-
-      if (mounted) {
-         _reminders = results[0] as List<MaintenanceComponent>;
-         _maintenanceRecords = results[1] as List<MaintenanceRecord>; // Already sorted by repo
-
-         // --- DEBUG LOGGING START ---
-         debugPrint('[HomeScreen - LoadDetails] Loaded ${_reminders.length} reminders for ${_currentVehicle?.name}:');
-         for (var comp in _reminders) {
-            if (_currentVehicle != null) {
-               final status = comp.getStatus(_currentVehicle!.mileage.toDouble(), null);
-               debugPrint('  - ${comp.name}: Status = $status');
-            } else {
-               debugPrint('  - ${comp.name}: Cannot get status, currentVehicle is null');
-            }
-         }
-         // --- DEBUG LOGGING END ---
-
-         // Calculate derived data
-         _lastMaintenanceDate = _maintenanceRecords.isNotEmpty ? _maintenanceRecords.first.maintenanceDate : null;
-
-         if (_maintenanceRecords.isNotEmpty) {
-            final earliestRecord = _maintenanceRecords.reduce((a, b) =>
-                a.maintenanceDate.isBefore(b.maintenanceDate) ? a : b);
-            _trackedDays = DateTime.now().difference(earliestRecord.maintenanceDate).inDays;
-         } else {
-           _trackedDays = null;
-         }
-      }
-
-    } catch (e, stackTrace) {
-      final errorMsg = "加载 ${_currentVehicle?.name ?? '车辆'} 详情失败: ${e.toString()}";
-       if (mounted) {
-        setState(() {
-          // Append error only if there wasn't a global loading error already
-          _error = (_error == null || !_error!.contains("加载车辆信息失败")) ? errorMsg : "$_error\n$errorMsg";
-        });
-       }
-       debugPrint("Error loading vehicle details for ${_currentVehicle?.name}: $e\nStack trace: $stackTrace");
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoadingReminders = false;
-          _isLoadingRecords = false;
         });
       }
     }
@@ -230,78 +142,69 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // 监听所需的Provider
+    final vehicleProvider = Provider.of<VehicleListProvider>(context);
+    final maintenanceProvider = Provider.of<MaintenanceProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('车辆保养助手'),
         actions: [
           // --- Notifications Badge ---
-          if (!_isLoadingGlobalNotifications)
+          if (maintenanceProvider.criticalComponentCount > 0)
             badges_pkg.Badge(
-              showBadge: _criticalComponentCount > 0,
+              showBadge: true, 
               position: badges_pkg.BadgePosition.topEnd(top: 0, end: 3), // Fine-tune position
               badgeContent: Text(
-                  _criticalComponentCount > 99 ? '99+' : _criticalComponentCount.toString(),
-                  style: const TextStyle(color: Colors.white, fontSize: 10),
-              ),
-              badgeStyle: const badges_pkg.BadgeStyle(
-                 badgeColor: Colors.red, // Explicitly red
+                maintenanceProvider.criticalComponentCount > 99 ? '99+' : maintenanceProvider.criticalComponentCount.toString(),
+                style: const TextStyle(color: Colors.white, fontSize: 10),
               ),
               child: IconButton(
                 icon: const Icon(Icons.notifications_outlined),
-                tooltip: '查看所有提醒 (${_criticalComponentCount}项)',
-                onPressed: _criticalComponentCount > 0 ? () { // Only enable if count > 0
+                tooltip: '查看所有提醒 (${maintenanceProvider.criticalComponentCount}项)',
+                onPressed: maintenanceProvider.criticalComponentCount > 0 ? () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => NotificationsScreen(
                         // Pass ALL components that are critical across ALL vehicles
-                        criticalComponents: _allCriticalComponents,
+                        criticalComponents: maintenanceProvider.allCriticalComponents,
                         // We need to pass all vehicles as well for context
-                        vehicles: _vehicles,
+                        vehicles: vehicleProvider.vehicles,
                       ),
                     ),
                   );
-                } : null, // Disable button if no notifications
+                } : null, // Disable if there are no critical items
               ),
-            )
-          else
-            const Padding( // Loading indicator for notifications
-              padding: EdgeInsets.only(right: 16.0),
-              child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)),
             ),
-          const SizedBox(width: 8), // Spacing for the action
+          // --- End Notifications Badge ---
         ],
       ),
-      // Use RefreshIndicator for pull-to-refresh
-      body: RefreshIndicator(
-        onRefresh: _loadInitialData, // Trigger full reload on refresh
-        child: _buildBody(),
-      ),
+      // Show full page loading indicator during initial loading
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _buildHomeContent(vehicleProvider, maintenanceProvider),
     );
   }
 
-  // --- Body Content Logic ---
-  Widget _buildBody() {
-    // Handle initial loading state
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
+  // --- Content building methods ---
+  Widget _buildHomeContent(VehicleListProvider vehicleProvider, MaintenanceProvider maintenanceProvider) {
     // Handle error state when loading fails AND there are no vehicles
-    if (_error != null && _vehicles.isEmpty) {
+    if (_error != null && vehicleProvider.vehicles.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, color: Colors.red, size: 60),
-              const SizedBox(height: 16),
-              Text( '加载失败', style: Theme.of(context).textTheme.headlineSmall),
-              const SizedBox(height: 8),
-              Text( _error!, textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyMedium),
-              const SizedBox(height: 20),
-              ElevatedButton.icon( icon: const Icon(Icons.refresh), label: const Text('重试'), onPressed: _loadInitialData),
+              const Icon(Icons.error_outline, size: 48.0, color: Colors.red),
+              const SizedBox(height: 16.0),
+              Text(_error!, style: const TextStyle(fontSize: 16.0)),
+              const SizedBox(height: 24.0),
+              ElevatedButton(
+                onPressed: _loadInitialData,
+                child: const Text('重试'),
+              ),
             ],
           ),
         ),
@@ -309,141 +212,132 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     // Handle state when no vehicles are added yet
-    if (_vehicles.isEmpty) {
+    if (vehicleProvider.vehicles.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.directions_car_filled_outlined, size: 80, color: Colors.grey),
-              const SizedBox(height: 16),
-              Text( '暂无车辆信息', style: Theme.of(context).textTheme.headlineSmall),
-              const SizedBox(height: 8),
-              Text( '请在"车辆"页面添加您的第一辆车。', // Updated text
-                   textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyMedium),
-              const SizedBox(height: 20),
-              // Consider removing the button here if adding is done on Vehicle screen
-              // ElevatedButton.icon(
-              //   onPressed: () { /* TODO: Navigate to Add Vehicle Screen if needed */ },
-              //   icon: const Icon(Icons.add),
-              //   label: const Text('添加车辆'),
-              // ),
+              const Icon(Icons.directions_car_outlined, size: 48.0, color: Colors.blue),
+              const SizedBox(height: 16.0),
+              const Text('暂无车辆, 请先添加车辆', style: TextStyle(fontSize: 16.0)),
+              const SizedBox(height: 24.0),
+              ElevatedButton(
+                onPressed: () {
+                  // Navigate to VehicleListScreen to add a new vehicle
+                  Navigator.pushNamed(context, '/vehicle_list');
+                },
+                child: const Text('添加车辆'),
+              ),
             ],
           ),
         ),
       );
     }
 
-    // Main content display when vehicles are loaded
-    // Use ListView for scrollable content to accommodate different screen sizes
-    return ListView(
-      padding: const EdgeInsets.all(16.0),
-      children: [
-        // Display specific error related to loading vehicle details, if any
-         if (_error != null && _error!.contains("详情失败"))
-           Padding(
-             padding: const EdgeInsets.only(bottom: 16.0),
-             child: Text( _error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
-           ),
-        _buildVehicleOverviewSection(),
-        const SizedBox(height: 24.0), // Consistent spacing
-        _buildVehicleStatusSection(),
-        const SizedBox(height: 24.0),
-        _buildMaintenanceRemindersSection(),
-        const SizedBox(height: 24.0),
-        _buildAnnouncementsSection(),
-      ],
-    );
-  }
-
-  // --- Section Builders ---
-
-  // Builds the top section with vehicle name, mileage, tracked time, and switch button
-  Widget _buildVehicleOverviewSection() {
-    final String trackedDaysString = _trackedDays != null ? '$_trackedDays 天' : '无记录';
-    // Format mileage with commas
-    final String mileageString = _currentVehicle != null
-        ? NumberFormat.decimalPattern('zh_CN').format(_currentVehicle!.mileage)
-        : '0';
-
-    return Card(
-      elevation: 2.0, // Slightly more prominent
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)), // Rounded corners
-      child: Padding(
+    // Main content when everything is loaded successfully
+    return RefreshIndicator(
+      onRefresh: _loadInitialData, // Pull to refresh
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start, // Align top
-              children: [
-                // Flexible title to prevent overflow
-                Flexible(
-                  child: Text(
-                    '车辆概览: ${_currentVehicle?.name ?? 'N/A'}',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                    overflow: TextOverflow.ellipsis, // Handle long names
-                  ),
+            // Vehicle Overview Card - with vehicle selection
+            Card(
+              elevation: 1.0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            '车辆概览: ${_currentVehicle?.name ?? '未选择车辆'}', // Show vehicle name if loaded
+                            style: Theme.of(context).textTheme.titleLarge,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        // Switch button - consider using an icon button or styling
+                        TextButton(
+                          onPressed: vehicleProvider.vehicles.length > 1 ? _showVehicleSelectionDialog : null, // Only enable if >1 vehicle
+                          child: Text(vehicleProvider.vehicles.length > 1 ? '切换车辆' : '仅一辆车'),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16.0),
+                    Text('当前里程: ${NumberFormat.decimalPattern('zh_CN').format(_currentVehicle?.mileage ?? 0)} km'),
+                  ],
                 ),
-                // Switch button - consider using an icon button or styling
-                TextButton(
-                  onPressed: _vehicles.length > 1 ? _showVehicleSelectionDialog : null, // Only enable if >1 vehicle
-                  child: Text(_vehicles.length > 1 ? '切换车辆' : '仅一辆车'),
-                ),
-              ],
+              ),
             ),
-            const SizedBox(height: 12), // Increased spacing
-            Text('当前总里程: $mileageString km', style: Theme.of(context).textTheme.bodyLarge),
-            const SizedBox(height: 4),
-            Text('已记录时间: $trackedDaysString', style: Theme.of(context).textTheme.bodyLarge),
+            const SizedBox(height: 16.0),
+
+            _buildVehicleStatusCard(maintenanceProvider),
+            const SizedBox(height: 16.0),
+
+            // Maintenance Reminders Section
+            _buildMaintenanceRemindersSection(maintenanceProvider),
+            const SizedBox(height: 16.0),
+
+            // Announcements
+            _buildAnnouncementsSection(),
           ],
         ),
       ),
     );
   }
 
-  // Builds the status summary section (Last Maintenance, Item Count, Overall Status)
-  Widget _buildVehicleStatusSection() {
-    final String lastMaintenanceString = _lastMaintenanceDate != null
-        ? DateFormat.yMMMd('zh_CN').format(_lastMaintenanceDate!) // Use more descriptive format
-        : '无记录';
-
-    // Derive overall status based on critical reminders for the *current* vehicle
-    String overallStatus = '状态良好';
+  // --- Helper methods for building specific sections ---
+  Widget _buildVehicleStatusCard(MaintenanceProvider maintenanceProvider) {
+    // Default status values
+    String lastMaintenanceString = '无记录';
     IconData statusIcon = Icons.check_circle_outline;
-    Color statusColor = Colors.green; // Good status color
+    String overallStatus = '良好';
+    Color statusColor = Colors.green;
+
+    // --- Calculate last maintenance date string ---
+    if (_lastMaintenanceDate != null) {
+      // Format date as YYYY-MM-DD
+      lastMaintenanceString = DateFormat('yyyy-MM-dd').format(_lastMaintenanceDate!);
+    }
 
     // --- DEBUG LOGGING START ---
-    debugPrint('[HomeScreen - BuildStatus] Checking status for ${_currentVehicle?.name}. Total reminders: ${_reminders.length}');
+    debugPrint('[HomeScreen - BuildStatus] Checking status for ${_currentVehicle?.name}. Total reminders: ${maintenanceProvider.getComponentsForVehicle(_currentVehicle?.name ?? "").length}');
     // --- DEBUG LOGGING END ---
 
-    bool needsWarning = _reminders.any((r) {
+    // 使用Provider获取组件
+    final components = _currentVehicle != null 
+        ? maintenanceProvider.getComponentsForVehicle(_currentVehicle!.name)
+        : <MaintenanceComponent>[];
+        
+    bool needsWarning = components.any((r) {
         final status = r.getStatus(_currentVehicle?.mileage.toDouble() ?? 0.0, null);
         // debugPrint('  - [Warning Check] ${r.name}: Status = $status'); // Optional detailed log
         return status == MaintenanceStatus.warning;
       }
     );
-    bool needsAttention = _reminders.any((r) {
+    
+    bool needsAttention = components.any((r) {
         final status = r.getStatus(_currentVehicle?.mileage.toDouble() ?? 0.0, null);
         // debugPrint('  - [Attention Check] ${r.name}: Status = $status'); // Optional detailed log
         return status == MaintenanceStatus.attention;
       }
     );
 
-    // --- DEBUG LOGGING START ---
-    debugPrint('  Needs Warning: $needsWarning, Needs Attention: $needsAttention');
-    // --- DEBUG LOGGING END ---
-
-     if (needsWarning) {
-        overallStatus = '需要保养';
-        statusIcon = Icons.error_outline; // Use error icon for immediate action needed
-        statusColor = Colors.red; // Warning status color
+    if (needsWarning) {
+      statusIcon = Icons.error_outline;
+      overallStatus = '需要保养';
+      statusColor = Colors.red;
     } else if (needsAttention) {
-         overallStatus = '注意保养'; // Attention status text
-         statusIcon = Icons.warning_amber_rounded; // Attention icon
-         statusColor = Colors.orangeAccent; // Attention status color
+      statusIcon = Icons.warning_amber_outlined;
+      overallStatus = '注意保养';
+      statusColor = Colors.orange;
     }
 
     return Card(
@@ -457,7 +351,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             // Use Flexible to prevent overflow on small screens
             Flexible(child: _buildStatusItem(Icons.event_available_outlined, '上次保养', lastMaintenanceString)),
-            Flexible(child: _buildStatusItem(Icons.list_alt_outlined, '保养项目', '${_reminders.length} 项')),
+            Flexible(child: _buildStatusItem(Icons.list_alt_outlined, '保养项目', '${components.length} 项')),
             Flexible(child: _buildStatusItem(statusIcon, '当前状态', overallStatus, iconColor: statusColor)),
           ],
         ),
@@ -486,9 +380,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Builds the section listing maintenance reminders that need attention
-  Widget _buildMaintenanceRemindersSection() {
+  Widget _buildMaintenanceRemindersSection(MaintenanceProvider maintenanceProvider) {
     // Show loading indicator specifically for reminders
-    if (_isLoadingReminders) {
+    if (maintenanceProvider.isLoadingReminders) {
       return Column(
          crossAxisAlignment: CrossAxisAlignment.start,
          children: [
@@ -506,20 +400,18 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
+    // 获取当前车辆的组件
+    final components = _currentVehicle != null 
+        ? maintenanceProvider.getComponentsForVehicle(_currentVehicle!.name)
+        : <MaintenanceComponent>[];
+        
     // Filter reminders for the current vehicle that need attention or are overdue
-    final List<MaintenanceComponent> criticalReminders = _reminders.where((component) {
+    final List<MaintenanceComponent> criticalReminders = components.where((component) {
       // Ensure _currentVehicle is not null before accessing mileage
       if (_currentVehicle == null) return false;
       final status = component.getStatus(_currentVehicle!.mileage.toDouble(), null);
-      // --- DEBUG LOGGING START ---
-      // debugPrint('[HomeScreen - FilterReminders] Checking ${component.name}: Status = $status');
-      // --- DEBUG LOGGING END ---
       return status == MaintenanceStatus.attention || status == MaintenanceStatus.warning;
     }).toList();
-
-    // --- DEBUG LOGGING START ---
-    debugPrint('[HomeScreen - BuildReminders] Filtered critical reminders count: ${criticalReminders.length}');
-    // --- DEBUG LOGGING END ---
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -670,6 +562,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // --- Vehicle Selection Dialog ---
   void _showVehicleSelectionDialog() {
+    final vehicleProvider = Provider.of<VehicleListProvider>(context, listen: false);
+    final maintenanceProvider = Provider.of<MaintenanceProvider>(context, listen: false);
+    
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -683,9 +578,9 @@ class _HomeScreenState extends State<HomeScreen> {
               constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.5),
               child: ListView.builder(
                 shrinkWrap: true, // Important for AlertDialog content
-                itemCount: _vehicles.length,
+                itemCount: vehicleProvider.vehicles.length,
                 itemBuilder: (context, index) {
-                  final vehicle = _vehicles[index];
+                  final vehicle = vehicleProvider.vehicles[index];
                   final isSelected = _currentVehicle?.id == vehicle.id;
                   return ListTile(
                     title: Text(vehicle.name),
@@ -697,17 +592,21 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     // Show checkmark for the currently selected vehicle
                     trailing: isSelected
-                              ? const Icon(Icons.check_circle, color: Colors.green)
-                              : null,
+                            ? Icon(Icons.check_circle, color: Theme.of(context).colorScheme.primary)
+                            : null,
+                    selected: isSelected,
+                    selectedTileColor: Theme.of(context).colorScheme.primary.withOpacity(0.1), // Light highlight
                     onTap: () {
-                      if (!isSelected) { // Only process if a different vehicle is selected
-                        setState(() { _currentVehicle = vehicle; });
+                      Navigator.pop(context); // Close dialog
+                      if (!isSelected) { // Only update if selection changed
+                        setState(() => _currentVehicle = vehicle); // Update selection in memory
                         // Save selection and reload details
                         _prefs.setInt(_lastSelectedVehicleIdKey, vehicle.id).then((_) {
-                           _loadDetailsForCurrentVehicle();
+                          // 重新加载当前车辆的数据
+                          maintenanceProvider.loadComponentsForVehicle(vehicle.name);
+                          maintenanceProvider.loadRecordsForVehicle(vehicle.name);
                         });
                       }
-                      Navigator.of(context).pop(); // Close the dialog
                     },
                   );
                 },
@@ -716,19 +615,12 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text('关闭'),
-              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('取消'),
+              onPressed: () => Navigator.pop(context),
             ),
           ],
         );
       },
     );
   }
-
-  // --- NOTE: Old/Unused methods below this point should be removed ---
-  // Methods like _buildVehicleSelector, _buildCurrentVehicleDetails, _buildMileageInfo,
-  // _buildMaintenanceReminders (old), _buildReminderCard, _getReminderSubtitle,
-  // _buildMaintenanceHistory, _buildRecordTile, _showUpdateMileageDialog, _updateVehicleMileage
-  // _getIconForStatus, _getColorForStatus etc. are replaced by the new structure above.
-
-} // End of _HomeScreenState
+}

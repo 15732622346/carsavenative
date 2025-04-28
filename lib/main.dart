@@ -17,6 +17,7 @@ import 'screens/vehicle_list_screen.dart';
 import 'screens/maintenance_screen.dart';
 import 'screens/profile_screen.dart';
 import 'providers/vehicle_list_provider.dart';
+import 'providers/maintenance_provider.dart';
 
 late Isar isar;
 
@@ -61,6 +62,13 @@ Future<void> main() async {
         Provider<LocalRecordRepository>.value(value: localRecordRepository),
         ChangeNotifierProvider(
           create: (context) => VehicleListProvider(localVehicleRepository),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => MaintenanceProvider(
+            localComponentRepository, 
+            localRecordRepository,
+            localVehicleRepository,
+          ),
         ),
       ],
       child: const MyApp(),

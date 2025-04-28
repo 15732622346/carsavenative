@@ -188,4 +188,11 @@ class LocalMaintenanceRepository {
       return 0;
     }
   }
+
+  /// 删除单条保养记录
+  Future<bool> deleteRecord(int recordId) async {
+    return await isar.writeTxn(() async {
+      return await isar.maintenanceRecords.delete(recordId);
+    });
+  }
 }
