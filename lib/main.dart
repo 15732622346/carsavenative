@@ -16,6 +16,7 @@ import 'screens/home_screen.dart';
 import 'screens/vehicle_list_screen.dart';
 import 'screens/maintenance_screen.dart';
 import 'screens/profile_screen.dart';
+import 'providers/vehicle_list_provider.dart';
 
 late Isar isar;
 
@@ -24,20 +25,20 @@ Future<void> main() async {
 
   String directory = '';
   if (!kIsWeb) {
-    final dir = await getApplicationDocumentsDirectory();
+  final dir = await getApplicationDocumentsDirectory();
     directory = dir.path;
     print('数据库路径: $directory');
   }
 
   try {
-    isar = await Isar.open(
+  isar = await Isar.open(
       [
-        VehicleSchema,
-        MaintenanceComponentSchema,
-        MaintenanceRecordSchema,
-      ],
+      VehicleSchema,
+      MaintenanceComponentSchema,
+      MaintenanceRecordSchema,
+    ],
       directory: directory,
-      name: 'carsaveDb',
+    name: 'carsaveDb',
       inspector: true,
     );
     print('Isar 数据库初始化成功！');
@@ -58,6 +59,9 @@ Future<void> main() async {
         Provider<LocalVehicleRepository>.value(value: localVehicleRepository),
         Provider<LocalComponentRepository>.value(value: localComponentRepository),
         Provider<LocalRecordRepository>.value(value: localRecordRepository),
+        ChangeNotifierProvider(
+          create: (context) => VehicleListProvider(localVehicleRepository),
+        ),
       ],
       child: const MyApp(),
     ),

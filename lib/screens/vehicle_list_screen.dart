@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // Add import for DateFormat
+import 'package:provider/provider.dart'; // 添加Provider导入
 import '../models/vehicle_model.dart';
 // import '../services/api_service.dart'; // Re-remove ApiService import
 import 'package:isar/isar.dart'; // Re-add Isar Id import
 import '../main.dart'; // Re-add for global isar instance
 import '../repositories/local_vehicle_repository.dart'; // Re-add Local Repository import
-import 'add_vehicle_screen.dart';
 import '../repositories/local_maintenance_repository.dart'; // Import maintenance repo
+import '../providers/vehicle_list_provider.dart'; // 导入车辆列表Provider
+import 'add_vehicle_screen.dart';
 
 class VehicleListScreen extends StatefulWidget {
   const VehicleListScreen({Key? key}) : super(key: key);
@@ -76,11 +78,14 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
     });
 
     try {
-      // Fetch vehicles from the local repository
-      final vehicles = await _vehicleRepository.getAllVehicles(); 
+      // 通过Provider加载车辆列表
+      final vehicleProvider = Provider.of<VehicleListProvider>(context, listen: false);
+      await vehicleProvider.loadVehicles();
+      
       if (mounted) {
         setState(() {
-          _vehicles = vehicles;
+          _vehicles = vehicleProvider.vehicles;
+          _isLoading = false;
         });
       }
     } catch (e) {
@@ -91,12 +96,9 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
              _showErrorAlert(context, errorMessage);
            }
          });
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
+         setState(() {
+           _isLoading = false;
+         });
       }
     }
   }
@@ -137,10 +139,16 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
         await _maintenanceRepository.deleteRecordsByVehicle(vehicle.name, createTransaction: false);
       });
 
-      // Refresh list after successful deletion
-      _loadVehicles();
+      // 使用Provider更新车辆列表状态
+      final vehicleProvider = Provider.of<VehicleListProvider>(context, listen: false);
+      await vehicleProvider.loadVehicles();
       
+      // 更新当前页面的车辆列表
       if (mounted) {
+        setState(() {
+          _vehicles = vehicleProvider.vehicles;
+        });
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('车辆 "${vehicle.name}" 及关联组件已删除')),
         );
@@ -401,6 +409,10 @@ class _VehicleListScreenState extends State<VehicleListScreen> {
 
                 // Call repository update method
                 final updatedVehicle = await _vehicleRepository.updateVehicle(vehicle);
+                
+                // 使用Provider更新车辆列表状态
+                final vehicleProvider = Provider.of<VehicleListProvider>(context, listen: false);
+                await vehicleProvider.updateVehicle(vehicle);
                 
                 if (mounted) {
                   Navigator.pop(context);

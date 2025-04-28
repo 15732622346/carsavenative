@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:collection/collection.dart'; // Import for firstWhereOrNull
+import 'package:provider/provider.dart'; // 添加Provider导入
 import '../main.dart'; // Import for global isar instance
 import '../models/vehicle_model.dart';
 import '../models/maintenance_component_model.dart';
@@ -10,6 +11,7 @@ import 'package:intl/intl.dart'; // Import for date formatting in painter
 import 'dart:ui' as ui; // Import for painter
 import 'dart:math' as math; // Import for painter
 import '../models/maintenance_record_model.dart'; // Import record model
+import '../providers/vehicle_list_provider.dart'; // 导入车辆列表Provider
 // import 'edit_component_screen.dart'; // REMOVE: Delete this import as the file no longer exists
 import 'package:visibility_detector/visibility_detector.dart'; // Import visibility_detector
 
@@ -52,8 +54,14 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
       _error = null;
     });
     try {
-      // Load vehicles first for the filter chips
-      _vehicles = await _vehicleRepository.getAllVehicles();
+      // 使用Provider获取车辆列表，确保和车辆页面数据一致
+      final vehicleProvider = Provider.of<VehicleListProvider>(context, listen: false);
+      if (vehicleProvider.vehicles.isEmpty) {
+        // 如果Provider中没有数据，先加载一次数据
+        await vehicleProvider.loadVehicles();
+      }
+      _vehicles = vehicleProvider.vehicles;
+      
       if (!mounted) return;
       setState(() {
         _isLoadingVehicles = false;
@@ -202,6 +210,18 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
 
   // Widget to build the filter chips
   Widget _buildVehicleFilterChips() {
+    // 从Provider中获取最新的车辆列表，确保筛选选项与删除车辆保持同步
+    final vehicleProvider = Provider.of<VehicleListProvider>(context, listen: true);
+    _vehicles = vehicleProvider.vehicles;
+    
+    // 如果当前选中的车辆已被删除，则重置为"全部车辆"
+    if (_selectedVehicleName != null && 
+        !_vehicles.any((v) => v.name == _selectedVehicleName)) {
+      _selectedVehicleName = null;
+      // 异步加载数据，避免在build中直接调用setState
+      Future.microtask(() => _loadComponentsAndRecords());
+    }
+    
     // Use a list for chips, starting with "全部车辆"
     List<Widget> chips = [
       ChoiceChip(
