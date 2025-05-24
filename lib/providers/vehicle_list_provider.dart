@@ -1,15 +1,15 @@
 import 'package:flutter/foundation.dart';
 import '../models/vehicle_model.dart';
-import '../repositories/vehicle_repository.dart';
+import '../repositories/local_vehicle_repository.dart';
 
 /// 车辆列表状态管理
 class VehicleListProvider with ChangeNotifier {
-  final VehicleRepository _repository;
+  final LocalVehicleRepository _vehicleRepository;
   List<Vehicle> _vehicles = [];
   bool _isLoading = false;
   String? _error;
 
-  VehicleListProvider(this._repository) {
+  VehicleListProvider(this._vehicleRepository) {
     // 初始化时加载车辆列表
     loadVehicles();
   }
@@ -21,14 +21,15 @@ class VehicleListProvider with ChangeNotifier {
 
   /// 加载车辆列表
   Future<void> loadVehicles() async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-
     try {
-      _vehicles = await _repository.getAllVehicles();
+      _isLoading = true;
+      notifyListeners();
+
+      _vehicles = await _vehicleRepository.getAllVehicles();
+      _error = null;
     } catch (e) {
-      _error = e.toString();
+      _error = "加载车辆失败: $e";
+      print(_error);
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -38,10 +39,17 @@ class VehicleListProvider with ChangeNotifier {
   /// 添加车辆
   Future<void> addVehicle(Vehicle vehicle) async {
     try {
-      await _repository.addVehicle(vehicle);
-      await loadVehicles();
+      _isLoading = true;
+      notifyListeners();
+
+      final newVehicle = await _vehicleRepository.addVehicle(vehicle);
+      _vehicles.add(newVehicle);
+      _error = null;
     } catch (e) {
-      _error = e.toString();
+      _error = "添加车辆失败: $e";
+      print(_error);
+    } finally {
+      _isLoading = false;
       notifyListeners();
     }
   }
@@ -49,10 +57,23 @@ class VehicleListProvider with ChangeNotifier {
   /// 更新车辆
   Future<void> updateVehicle(Vehicle vehicle) async {
     try {
-      await _repository.updateVehicle(vehicle);
-      await loadVehicles();
+      _isLoading = true;
+      notifyListeners();
+
+      await _vehicleRepository.updateVehicle(vehicle);
+      
+      // 更新内存中的数据
+      final index = _vehicles.indexWhere((v) => v.id == vehicle.id);
+      if (index >= 0) {
+        _vehicles[index] = vehicle;
+      }
+      
+      _error = null;
     } catch (e) {
-      _error = e.toString();
+      _error = "更新车辆失败: $e";
+      print(_error);
+    } finally {
+      _isLoading = false;
       notifyListeners();
     }
   }
@@ -60,10 +81,20 @@ class VehicleListProvider with ChangeNotifier {
   /// 删除车辆
   Future<void> deleteVehicle(int id) async {
     try {
-      await _repository.deleteVehicle(id);
-      await loadVehicles();
+      _isLoading = true;
+      notifyListeners();
+
+      await _vehicleRepository.deleteVehicle(id);
+      
+      // 从内存中移除
+      _vehicles.removeWhere((v) => v.id == id);
+      
+      _error = null;
     } catch (e) {
-      _error = e.toString();
+      _error = "删除车辆失败: $e";
+      print(_error);
+    } finally {
+      _isLoading = false;
       notifyListeners();
     }
   }

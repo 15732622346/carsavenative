@@ -4,44 +4,42 @@ import '../models/maintenance_record_model.dart';
 import '../models/vehicle_model.dart';
 import '../repositories/local_component_repository.dart';
 import '../repositories/local_record_repository.dart';
-import '../repositories/vehicle_repository.dart';
+import '../repositories/local_vehicle_repository.dart';
 
 /// 保养组件和记录状态管理
 class MaintenanceProvider with ChangeNotifier {
-  final LocalComponentRepository? _componentRepository;
-  final LocalRecordRepository? _recordRepository;
-  final VehicleRepository _vehicleRepository;
+  final LocalComponentRepository _componentRepository;
+  final LocalRecordRepository _recordRepository;
+  final LocalVehicleRepository _vehicleRepository;
   
-  // State variables
-  List<MaintenanceComponent> _components = [];
-  List<MaintenanceRecord> _records = [];
-  bool _isLoading = false;
-  String? _error;
+  // 当前车辆的组件
   Map<String, List<MaintenanceComponent>> _vehicleComponents = {};
+  // 当前车辆的记录
   Map<String, List<MaintenanceRecord>> _vehicleRecords = {};
-  List<Vehicle> _cachedVehicles = [];
   // 所有车辆的关键组件
   List<MaintenanceComponent> _allCriticalComponents = [];
   // 加载状态
   bool _isLoadingReminders = false;
+  // 缓存的车辆列表
+  List<Vehicle> _cachedVehicles = [];
   
-  MaintenanceProvider(
-    this._componentRepository,
-    this._recordRepository,
-    this._vehicleRepository,
-  ) {
+  MaintenanceProvider(this._componentRepository, this._recordRepository, this._vehicleRepository) {
     // 在创建时加载车辆列表用于后续操作
     debugPrint('【Provider】MaintenanceProvider初始化');
-    loadData();
     _loadVehicles();
   }
 
+  // 私有方法，加载车辆列表
+  Future<void> _loadVehicles() async {
+    try {
+      _cachedVehicles = await _vehicleRepository.getAllVehicles();
+      debugPrint('【Provider】缓存车辆列表加载完成，${_cachedVehicles.length}辆车');
+    } catch (e) {
+      debugPrint('【Provider错误】加载车辆失败: $e');
+    }
+  }
+
   // Getters
-  List<MaintenanceComponent> get components => _components;
-  List<MaintenanceRecord> get records => _records;
-  bool get isLoading => _isLoading;
-  String? get error => _error;
-  
   List<MaintenanceComponent> getComponentsForVehicle(String vehicleName) {
     return _vehicleComponents[vehicleName] ?? [];
   }
@@ -75,7 +73,7 @@ class MaintenanceProvider with ChangeNotifier {
       notifyUI();
       
       debugPrint('【Provider】开始加载车辆组件: $vehicleName');
-      final components = await _componentRepository!.getComponentsByVehicleName(vehicleName);
+      final components = await _componentRepository.getComponentsByVehicleName(vehicleName);
       debugPrint('【Provider】组件加载完成: ${components.length}个');
       _vehicleComponents[vehicleName] = components;
       
@@ -125,7 +123,7 @@ class MaintenanceProvider with ChangeNotifier {
   Future<List<MaintenanceRecord>> loadRecordsForVehicle(String vehicleName) async {
     try {
       debugPrint('【Provider】开始加载车辆记录: $vehicleName');
-      final records = await _recordRepository!.getMaintenanceRecords(vehicleName: vehicleName);
+      final records = await _recordRepository.getMaintenanceRecords(vehicleName: vehicleName);
       
       // 确保记录按日期排序（最新的在前面）
       records.sort((a, b) => b.maintenanceDate.compareTo(a.maintenanceDate));
@@ -153,7 +151,7 @@ class MaintenanceProvider with ChangeNotifier {
         components = _vehicleComponents[vehicle.name]!;
       } else {
         debugPrint('【Provider】加载车辆组件: ${vehicle.name}');
-        components = await _componentRepository!.getComponentsByVehicleName(vehicle.name);
+        components = await _componentRepository.getComponentsByVehicleName(vehicle.name);
         _vehicleComponents[vehicle.name] = components;
       }
       
@@ -174,103 +172,128 @@ class MaintenanceProvider with ChangeNotifier {
   
   /// 添加保养组件
   Future<void> addComponent(MaintenanceComponent component) async {
-    if (_componentRepository == null) {
-      _error = 'Web platform does not support maintenance features';
-      notifyListeners();
-      return;
-    }
-
     try {
-      await _componentRepository!.addComponent(component);
-      await loadData();
-    } catch (e) {
-      _error = e.toString();
+      await _componentRepository.addComponent(component);
+      
+      if (_vehicleComponents.containsKey(component.vehicle)) {
+        _vehicleComponents[component.vehicle]!.add(component);
+      } else {
+        _vehicleComponents[component.vehicle] = [component];
+      }
+      
+      // 更新关键组件列表
+      _updateCriticalComponentsForVehicle(component.vehicle);
+      
       notifyListeners();
+    } catch (e) {
+      print('添加组件失败: $e');
+      rethrow;
     }
   }
   
   /// 更新保养组件
   Future<void> updateComponent(MaintenanceComponent component) async {
-    if (_componentRepository == null) {
-      _error = 'Web platform does not support maintenance features';
-      notifyListeners();
-      return;
-    }
-
     try {
-      await _componentRepository!.updateComponent(component);
-      await loadData();
-    } catch (e) {
-      _error = e.toString();
+      await _componentRepository.updateComponent(component);
+      
+      if (_vehicleComponents.containsKey(component.vehicle)) {
+        final index = _vehicleComponents[component.vehicle]!
+            .indexWhere((c) => c.id == component.id);
+        if (index >= 0) {
+          _vehicleComponents[component.vehicle]![index] = component;
+        }
+      }
+      
+      // 更新关键组件列表
+      _updateCriticalComponentsForVehicle(component.vehicle);
+      
       notifyListeners();
+    } catch (e) {
+      print('更新组件失败: $e');
+      rethrow;
     }
   }
   
   /// 删除保养组件
-  Future<void> deleteComponent(int id) async {
-    if (_componentRepository == null) {
-      _error = 'Web platform does not support maintenance features';
-      notifyListeners();
-      return;
-    }
-
+  Future<void> deleteComponent(int id, String vehicleName) async {
     try {
-      await _componentRepository!.deleteComponent(id);
-      await loadData();
-    } catch (e) {
-      _error = e.toString();
+      await _componentRepository.deleteComponent(id);
+      
+      if (_vehicleComponents.containsKey(vehicleName)) {
+        _vehicleComponents[vehicleName]!.removeWhere((c) => c.id == id);
+      }
+      
+      // 从关键组件列表中移除
+      _allCriticalComponents.removeWhere((c) => c.id == id);
+      
       notifyListeners();
+    } catch (e) {
+      print('删除组件失败: $e');
+      rethrow;
     }
   }
   
   /// 添加保养记录
   Future<void> addRecord(MaintenanceRecord record) async {
-    if (_recordRepository == null) {
-      _error = 'Web platform does not support maintenance features';
-      notifyListeners();
-      return;
-    }
-
     try {
-      await _recordRepository!.addMaintenanceRecord(record);
-      await loadData();
-    } catch (e) {
-      _error = e.toString();
+      final newRecord = await _recordRepository.addMaintenanceRecord(record);
+      
+      if (_vehicleRecords.containsKey(record.vehicleName)) {
+        _vehicleRecords[record.vehicleName]!.add(newRecord);
+        // 保持记录按日期排序
+        _vehicleRecords[record.vehicleName]!.sort(
+          (a, b) => b.maintenanceDate.compareTo(a.maintenanceDate)
+        );
+      } else {
+        _vehicleRecords[record.vehicleName] = [newRecord];
+      }
+      
       notifyListeners();
+    } catch (e) {
+      print('添加记录失败: $e');
+      rethrow;
     }
   }
   
   /// 更新保养记录
   Future<void> updateRecord(MaintenanceRecord record) async {
-    if (_recordRepository == null) {
-      _error = 'Web platform does not support maintenance features';
-      notifyListeners();
-      return;
-    }
-
     try {
-      await _recordRepository!.addMaintenanceRecord(record);
-      await loadData();
-    } catch (e) {
-      _error = e.toString();
+      // LocalRecordRepository没有提供updateRecord方法
+      // 我们需要自己实现，或者调用通用方法
+      await _recordRepository.addMaintenanceRecord(record); // 使用添加来替代更新
+      
+      if (_vehicleRecords.containsKey(record.vehicleName)) {
+        final index = _vehicleRecords[record.vehicleName]!
+            .indexWhere((r) => r.id == record.id);
+        if (index >= 0) {
+          _vehicleRecords[record.vehicleName]![index] = record;
+          // 保持记录按日期排序
+          _vehicleRecords[record.vehicleName]!.sort(
+            (a, b) => b.maintenanceDate.compareTo(a.maintenanceDate)
+          );
+        }
+      }
+      
       notifyListeners();
+    } catch (e) {
+      print('更新记录失败: $e');
+      rethrow;
     }
   }
   
   /// 删除保养记录
-  Future<void> deleteRecord(int id) async {
-    if (_recordRepository == null) {
-      _error = 'Web platform does not support maintenance features';
-      notifyListeners();
-      return;
-    }
-
+  Future<void> deleteRecord(int id, String vehicleName) async {
     try {
-      await _recordRepository!.deleteMaintenanceRecord(id);
-      await loadData();
-    } catch (e) {
-      _error = e.toString();
+      await _recordRepository.deleteMaintenanceRecord(id);
+      
+      if (_vehicleRecords.containsKey(vehicleName)) {
+        _vehicleRecords[vehicleName]!.removeWhere((r) => r.id == id);
+      }
+      
       notifyListeners();
+    } catch (e) {
+      print('删除记录失败: $e');
+      rethrow;
     }
   }
   
@@ -320,37 +343,5 @@ class MaintenanceProvider with ChangeNotifier {
     // 自定义方法，添加日志
     debugPrint('【Provider】触发UI更新 ${DateTime.now()}');
     notifyListeners();
-  }
-
-  Future<void> loadData() async {
-    if (_componentRepository == null || _recordRepository == null) {
-      _error = 'Web platform does not support maintenance features';
-      notifyListeners();
-      return;
-    }
-
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-
-    try {
-      _components = await _componentRepository!.getAllComponents();
-      _records = await _recordRepository!.getMaintenanceRecords();
-    } catch (e) {
-      _error = e.toString();
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  // 私有方法，加载车辆列表
-  Future<void> _loadVehicles() async {
-    try {
-      _cachedVehicles = await _vehicleRepository.getAllVehicles();
-      debugPrint('【Provider】缓存车辆列表加载完成，${_cachedVehicles.length}辆车');
-    } catch (e) {
-      debugPrint('【Provider错误】加载车辆失败: $e');
-    }
   }
 }

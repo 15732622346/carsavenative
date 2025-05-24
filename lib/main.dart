@@ -5,7 +5,6 @@ import 'package:isar/isar.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'models/vehicle_model.dart';
 import 'models/maintenance_component_model.dart';
@@ -13,8 +12,6 @@ import 'models/maintenance_record_model.dart';
 import 'repositories/local_vehicle_repository.dart';
 import 'repositories/local_component_repository.dart';
 import 'repositories/local_record_repository.dart';
-import 'repositories/web_vehicle_repository.dart';
-import 'repositories/vehicle_repository.dart';
 import 'screens/home_screen.dart';
 import 'screens/vehicle_list_screen.dart';
 import 'screens/maintenance_screen.dart';
@@ -27,81 +24,56 @@ late Isar isar;
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  if (kIsWeb) {
-    // Web platform - use SharedPreferences
-    final prefs = await SharedPreferences.getInstance();
-    final vehicleRepository = WebVehicleRepository(prefs);
-    
-    runApp(
-      MultiProvider(
-        providers: [
-          Provider<SharedPreferences>.value(value: prefs),
-          Provider<VehicleRepository>.value(value: vehicleRepository),
-          ChangeNotifierProvider(
-            create: (context) => VehicleListProvider(vehicleRepository),
-          ),
-          ChangeNotifierProvider(
-            create: (context) => MaintenanceProvider(
-              null,
-              null,
-              vehicleRepository,
-            ),
-          ),
-        ],
-        child: const MyApp(),
-      ),
-    );
-  } else {
-    // Native platforms - use Isar
-    String directory = '';
-    final dir = await getApplicationDocumentsDirectory();
+  String directory = '';
+  if (!kIsWeb) {
+  final dir = await getApplicationDocumentsDirectory();
     directory = dir.path;
     print('数据库路径: $directory');
-
-    try {
-      isar = await Isar.open(
-        [
-          VehicleSchema,
-          MaintenanceComponentSchema,
-          MaintenanceRecordSchema,
-        ],
-        directory: directory,
-        name: 'carsaveDb',
-        inspector: true,
-      );
-      print('Isar 数据库初始化成功！');
-    } catch (e, stackTrace) {
-      print('Isar 数据库初始化失败：$e');
-      print('错误堆栈：$stackTrace');
-      rethrow;
-    }
-
-    final vehicleRepository = LocalVehicleRepository(isar);
-    final localComponentRepository = LocalComponentRepository(isar);
-    final localRecordRepository = LocalRecordRepository(isar);
-
-    runApp(
-      MultiProvider(
-        providers: [
-          Provider<Isar>.value(value: isar),
-          Provider<VehicleRepository>.value(value: vehicleRepository),
-          Provider<LocalComponentRepository>.value(value: localComponentRepository),
-          Provider<LocalRecordRepository>.value(value: localRecordRepository),
-          ChangeNotifierProvider(
-            create: (context) => VehicleListProvider(vehicleRepository),
-          ),
-          ChangeNotifierProvider(
-            create: (context) => MaintenanceProvider(
-              localComponentRepository,
-              localRecordRepository,
-              vehicleRepository,
-            ),
-          ),
-        ],
-        child: const MyApp(),
-      ),
-    );
   }
+
+  try {
+  isar = await Isar.open(
+      [
+      VehicleSchema,
+      MaintenanceComponentSchema,
+      MaintenanceRecordSchema,
+    ],
+      directory: directory,
+    name: 'carsaveDb',
+      inspector: true,
+    );
+    print('Isar 数据库初始化成功！');
+  } catch (e, stackTrace) {
+    print('Isar 数据库初始化失败：$e');
+    print('错误堆栈：$stackTrace');
+    rethrow;
+  }
+
+  final localVehicleRepository = LocalVehicleRepository(isar);
+  final localComponentRepository = LocalComponentRepository(isar);
+  final localRecordRepository = LocalRecordRepository(isar);
+
+  runApp(
+    MultiProvider(
+      providers: [
+        Provider<Isar>.value(value: isar),
+        Provider<LocalVehicleRepository>.value(value: localVehicleRepository),
+        Provider<LocalComponentRepository>.value(value: localComponentRepository),
+        Provider<LocalRecordRepository>.value(value: localRecordRepository),
+        ChangeNotifierProvider(
+          create: (context) => VehicleListProvider(localVehicleRepository),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => MaintenanceProvider(
+            localComponentRepository, 
+            localRecordRepository,
+            localVehicleRepository,
+          ),
+        ),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
