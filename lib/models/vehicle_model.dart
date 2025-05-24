@@ -1,4 +1,5 @@
 import 'package:isar/isar.dart'; // Add Isar import
+import 'package:intl/intl.dart';
 
 part 'vehicle_model.g.dart'; // Add part directive
 
@@ -23,6 +24,56 @@ class Vehicle {
     this.image,
     this.plateNumber,
   });
+
+  // Add fromJson factory constructor
+  factory Vehicle.fromJson(String json) {
+    final Map<String, dynamic> data = Map<String, dynamic>.fromEntries(
+      json.split(',').map((pair) {
+        final parts = pair.split(':');
+        return MapEntry(parts[0], parts[1]);
+      }),
+    );
+    
+    final vehicle = Vehicle(
+      name: data['name'] ?? '',
+      plateNumber: data['plateNumber'],
+      image: data['image'],
+      manufacturingDate: data['manufacturingDate'] != null 
+          ? DateTime.parse(data['manufacturingDate']!) 
+          : null,
+      year: int.parse(data['year'] ?? '0'),
+      mileage: int.parse(data['mileage'] ?? '0'),
+    );
+    
+    if (data['id'] != null) {
+      vehicle.id = int.parse(data['id']!);
+    }
+    
+    return vehicle;
+  }
+
+  // Add toJson method
+  String toJson() {
+    final data = {
+      'id': id.toString(),
+      'name': name,
+      'plateNumber': plateNumber,
+      'image': image,
+      'manufacturingDate': manufacturingDate?.toIso8601String(),
+      'year': year.toString(),
+      'mileage': mileage.toString(),
+    };
+    
+    return data.entries
+        .where((e) => e.value != null)
+        .map((e) => '${e.key}:${e.value}')
+        .join(',');
+  }
+
+  String get formattedManufacturingDate {
+    if (manufacturingDate == null) return '未知';
+    return DateFormat('yyyy-MM-dd').format(manufacturingDate!);
+  }
 
   // --- REMOVED/COMMENTED OUT fromJson factory ---
   /*

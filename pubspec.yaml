@@ -56,6 +56,9 @@ dependencies:
   # Add Visibility Detector
   visibility_detector: ^0.4.0+2
 
+  # Add package_info_plus for version info
+  package_info_plus: ^8.3.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -3,30 +3,29 @@ import '../main.dart'; // Import main to access the global isar instance
 import '../models/vehicle_model.dart';
 import '../models/maintenance_component_model.dart'; // Ensure this is present
 import '../models/maintenance_record_model.dart';    // Ensure this is present
+import 'vehicle_repository.dart';
 
-class LocalVehicleRepository {
+class LocalVehicleRepository implements VehicleRepository {
   final Isar isar;
 
   LocalVehicleRepository(this.isar);
 
-  // Get all vehicles
+  @override
   Future<List<Vehicle>> getAllVehicles() async {
     return await isar.vehicles.where().findAll();
   }
 
-  // Get a single vehicle by Isar ID
+  @override
   Future<Vehicle?> getVehicleById(int id) async {
     return await isar.vehicles.get(id);
   }
 
-  // Add a new vehicle
+  @override
   Future<Vehicle> addVehicle(Vehicle vehicle) async {
-    // --- Logic to check for duplicate name locally ---
     final existing = await isar.vehicles.filter().nameEqualTo(vehicle.name).findFirst();
     if (existing != null) {
       throw Exception('添加失败：已存在同名的车辆，请使用其他名称。');
     }
-    // --- End duplicate check ---
 
     await isar.writeTxn(() async {
       await isar.vehicles.put(vehicle);
@@ -34,21 +33,17 @@ class LocalVehicleRepository {
     return vehicle;
   }
 
-  // Update an existing vehicle
+  @override
   Future<Vehicle> updateVehicle(Vehicle vehicle) async {
     try {
-      // 检查ID是否有效
       if (vehicle.id <= 0) {
         throw Exception("无效的车辆ID: ${vehicle.id}");
       }
       
-      // 在事务中更新车辆
       await isar.writeTxn(() async {
-        // 使用put方法覆盖现有记录
         await isar.vehicles.put(vehicle);
       });
       
-      // 验证更新是否成功
       final updatedVehicle = await isar.vehicles.get(vehicle.id);
       if (updatedVehicle == null) {
         throw Exception("更新失败: 无法获取更新后的车辆");
@@ -62,7 +57,7 @@ class LocalVehicleRepository {
     }
   }
 
-  // Delete a vehicle
+  @override
   Future<void> deleteVehicle(int id, {bool createTransaction = true}) async {
     if (createTransaction) {
       await isar.writeTxn(() async {
@@ -73,12 +68,10 @@ class LocalVehicleRepository {
     }
   }
 
-  // Read All (Stream) - Useful for reactive UI updates
   Stream<List<Vehicle>> watchAllVehicles() {
     return isar.vehicles.where().watch(fireImmediately: true);
   }
 
-  // Read One by Isar ID (Stream)
   Stream<Vehicle?> watchVehicleById(Id id) {
     return isar.vehicles.watchObject(id, fireImmediately: true);
   }
